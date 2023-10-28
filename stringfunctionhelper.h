@@ -1,0 +1,649 @@
+#pragma once
+#include <string>
+#include <cstring>
+#include <sstream>
+#include <utility>
+#include <algorithm>
+#include <vector>
+#include <memory>
+#include <filesystem>
+#include <fstream>
+#include <random>
+#include "C:\Users\Acer\source\MyLib\random_generator.h"
+
+
+namespace Str{
+
+	// function to check character always true
+	bool always_true(int) { return true; }
+
+	// type of comment header
+
+	using byte = unsigned char;
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   Is Alpha Numeric Character
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool isalnum(char c) {
+		
+		return (c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123);
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   REVERSE STRING
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename Tchar>
+	std::basic_string<Tchar> reverseString(std::basic_string<Tchar> str) {
+		int l = str.size();
+		for (int i = 0; i < l / 2; i++) {
+			std::swap(str[i], str[l - i - 1]);
+		}
+		return str;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                        REMOVE SPACE FROM BEGINING AND END OF STRING 
+	//                        GENERALIZED REMOVING NON MEANING CHARACTER
+	//        
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void removeBlank(std::string& str, char Nchar = ' ') {
+
+		if (str.empty()) return;
+
+		while (str[str.size() - 1] == Nchar) str.pop_back();
+
+		int i = 0;
+
+		while (str[i] == Nchar) ++i;
+
+		str = str.substr(i);
+
+	}
+
+	std::string removeUnusefullCharBiginning(const std::string& str, char Nchar = '0') {
+
+		if (str.empty()) return str;
+		int i{};
+		while (str[i] == Nchar) ++i;
+
+		return str.substr(i);
+	}
+
+	std::string removeUnusefullCharEnd(const std::string& _str, char Nchar = '0') {
+
+		if (_str.empty()) return _str;
+
+		std::string str = _str;
+
+		while (str[str.size() - 1] == Nchar) str.pop_back();
+
+		return str;
+	}
+
+	std::string removeUnusefullCharAny(const std::string& _str, char Nchar = ' ') {
+
+		if (_str.empty()) return {};
+		std::string str;
+		for (auto& c : _str)
+		{
+			if (c != Nchar) str.push_back(c);
+		}
+
+		return str;
+	}
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //                   CONVERT BETWEEN STRING TYPE
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	template<typename Tchar, typename Tcharf = char>
+	std::basic_string<Tchar>  to_char(const std::basic_string<Tcharf>& str) {
+
+		std::basic_string<Tchar> newStr;
+		newStr.resize(str.size());
+
+		std::copy(str.begin(), str.end(), newStr.begin());
+
+		return newStr;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   GET ALL DIGIT THAT NEED TO WRITE NUMBER IN BASE 'B'
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string digitOfBase(const int base) {
+		if (base < 2 || base > 36) { std::cout << "base should be between 2 and 35 \n"; return std::string{}; }
+		std::string strBase;
+		for (int i = 0; i < base; i++)
+		{
+			if (i < 10) strBase.push_back(char(i + 48));
+			else strBase.push_back(char(i + 55));
+		}
+
+		return strBase;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//               CONVERT CHAR AND SHORT TO HEX
+	// 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string Base16 = digitOfBase(16);
+
+	std::string toHex(char c) {
+
+		return  std::string{ Base16[(c & 0xf0) >> 4] } + std::string{ Base16[c & 0x0f] };
+	}
+
+	std::string toHex(short s) {
+
+		return  std::string{ Base16[(s & 0xf000) >> 12] } + std::string{ Base16[(s & 0x0f00) >> 8] }
+		+ std::string{ Base16[(s & 0x00f0) >> 4] } + std::string{ Base16[s & 0x000f] };
+	}
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//					UTILITY OF IDENTIFY NUMBER BASE AND CHECK WHICH WRITEN BASE
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	int minimalBase(const std::string& str) {
+
+
+		return 0;
+	}
+
+	template<int N>
+	bool is_string_number(const std::string& str) {
+
+		return true;
+	}
+
+	template<>
+	bool is_string_number<10>(const std::string& str) {
+
+		for (auto& c : str)
+		{
+			if (c < 48 || c > 57) return false;
+		}
+
+		return true;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   PUT COMMENT HERE
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	bool is_string_bin(std::string str) {
+
+		for (auto c : str)
+		{
+			if (c != '0' && c != '1') return false;
+		}
+
+		return true;
+	}
+
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   PUT COMMENT HERE <use positif to shift right and negatif for left
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	std::string shift_left_string(const std::string& str, int n)
+	{
+		if (n == 0) return str;
+		int sz = str.size();
+		if (std::abs(n) > sz) return std::string{};
+
+		std::string outstring;
+		outstring.resize(sz - abs(n));
+
+		if (n > 0) std::copy(str.begin() + n, str.end(), outstring.begin());
+		if (n < 0) std::copy(str.begin(), str.end() + n, outstring.begin());
+
+		return outstring;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   REMOVE UNUSEFUL FROM STRING NUMBERS 
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string remove_unusefullZero(std::string str_number)
+	{
+		if (!is_string_number<10>(str_number)) return std::string{};
+		int n_Zero = 0;
+
+		for (auto& c : str_number)
+		{
+			if (c == '0') { ++n_Zero; continue; }
+			break;
+		}
+
+		if (n_Zero == str_number.size()) return "0";
+
+		return shift_left_string(str_number, n_Zero);
+	}
+
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////
+      //
+      //                   GEOMETRY OF WORDS IN TEXT ALPHANUMERIC.
+	  //                   AND OF CONVERTING STRING TO ANOTHER NUMERICAL STRUCTURE.
+      //
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	template<typename Tchar>
+	std::pair<uint32_t, uint32_t>  convertStrCoord(const std::basic_string<Tchar>& str) {
+
+		uint32_t x{}, y{}, sz = str.size();
+
+		for (uint32_t i = 0; i < sz / 2u; i++) {
+			x += (uint32_t)str[i];
+			y += (uint32_t)str[sz - i - 1];
+		}
+
+		if (sz % 2 != 0) {
+			x += (uint32_t)str[sz / 2u];
+			y += (uint32_t)str[sz / 2u];
+		}
+
+		return std::make_pair(x, y);
+	}
+
+	template<typename T, typename Tchar = char> 
+	T convertStrInt(const std::basic_string<Tchar>& str  , T(*f)(const std::basic_string<Tchar>&) ) {
+
+		return f(str);
+
+	}
+
+	template<typename rgb_t, typename Tchar = char>
+	rgb_t stringTorgb(const std::basic_string<Tchar>& str, byte(*f256)(const std::string&)) {
+		// cut string in three part  |abc..|de..|fg..| rgb_t.red,green,blue of unsigned char.
+		rgb_t rgb{};
+
+		// code...
+		// devide string in three party
+
+		return rgb;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   LOAD WORDS FROM TEXT FILE 
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::vector<std::string> LoadWordsFromTextFile(const std::string& filename) {
+
+		// get size of file
+		size_t file_size = std::filesystem::file_size(filename);
+
+		// check if file exist by using file size
+		if (file_size == -1) {
+			std::cout << "Error in loading file " << filename << "\n";
+			return {};
+		}
+
+		std::ifstream ifs{ filename };
+
+		std::vector<std::string> vStr;
+
+		std::string temp;
+
+		while (true) {
+			char c;
+			ifs.get(c);
+
+			if (ifs.eof()) break;
+
+			if ( !isalnum(c) ) {               //std::isspace(c)
+				if (!temp.empty()) {
+				     vStr.push_back(temp);
+				     temp.clear();
+				}
+			}
+
+			else temp.push_back(c); 
+		}
+
+		ifs.close();
+		return vStr;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                  PRINT VECTOR OF STRING 
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename Tchar>
+	void PrintWords(const std::vector <std::basic_string<Tchar>>& vStr, int line = 60) {
+		
+		if (vStr.size() == 0) return;
+		
+		int n{};
+
+		for (auto& w : vStr) {
+			std::cout << std::setw(w.size()) << std::left << w ;
+			std::cout << std::setw(2) << std::left << "  ";
+			n += w.size();
+			if (n > line) {
+				n = 0;
+				std::cout << '\n';
+				std::cin.get();
+			}
+		}
+
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                        GET RANDOM STRING a..z A..Z 01..9
+	//
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string getRandomString(int size) {
+		// size should be positive
+		RNG::RG<char> rchar('a','z');
+		RNG::RG<char> Rchar('A', 'Z');
+		RNG::RG<char> rNumb('0', '9');
+		RNG::RG<int> r(0, 2);
+
+		char c{};
+		std::string str;
+
+		for (int i = 0; i != size; ++i) {
+			int j = r();
+			if (j == 0 ) str.push_back(rchar());
+			if (j == 1 ) str.push_back(Rchar());
+			if (j == 2 ) str.push_back(rNumb());
+		}
+
+		return str;
+	}
+
+	std::string getRandomString(const char* fmt) {   // '-_@'
+
+		RNG::RG<char> rchar('a', 'z');
+		RNG::RG<char> Rchar('A', 'Z');
+		RNG::RG<char> rNumb('0', '9');
+		RNG::RG<int> r(0, 2);
+
+		char c{};
+		std::string str;
+
+		while (*fmt != 0) {
+			if (*fmt == '-') str.push_back(Rchar());
+			if (*fmt == '_') str.push_back(rchar());
+			if (*fmt == '@') str.push_back(rNumb());
+			if (*fmt != '-' && *fmt != '_' && *fmt != '@') str.push_back(*fmt);
+			fmt++;
+		}
+
+		return str;
+	}
+
+	std::string getRandomString(const char* alphabet, size_t size) {
+
+		if (alphabet == "") return{};
+
+		RNG::RG<char> rchar{ std::string(alphabet) };
+
+		std::string str;
+
+		for (int i = 0; i != size; ++i) str.push_back(rchar[1]);
+
+		return str;
+	}
+
+	std::string getRandomString2(int max_size) { // maximum size is max_size
+
+		RNG::RG<int> sz(0, max_size);
+
+		return getRandomString(sz());
+	}
+
+	std::string getRandomString2(const char* fmt) {
+
+		int size = (int)std::strlen(fmt);
+
+		RNG::RG<int> sz(0, size - 1);
+
+		return getRandomString(fmt).substr(0, sz());
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                    RANDOM STRING GENERATION 
+	//                    fmt = "---____@@@@@@" 
+	//                    - for capital latter
+	//                    _ for miniscul latter
+	//                    @ for numeric letter
+	//
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::vector<std::string>  getRandomStringVector(int max_string_size, int vector_size, bool variable_size = false)
+	{
+		// not accepted negative value
+		if (max_string_size < 0 || vector_size < 0) {
+			std::cout << "One of argument in random string function is negative\n";
+			return {};
+		}
+
+		// Initializing the random number seeding 
+		RNG::RG<char> rchar('a', 'z');
+		RNG::RG<char> Rchar('A', 'Z');
+		RNG::RG<char> rNumb('0', '9');
+		RNG::RG<int> rSize(0, max_string_size);
+		RNG::RG<int> r(0, 2);
+
+		std::vector<std::string> vString;
+
+		for (int k = 0; k < vector_size; ++k) {
+
+		        char c{};
+		        std::string str;
+
+				int strSize = !variable_size ? max_string_size : rSize();
+		        
+		        for (int i = 0; i != strSize; ++i) {
+		        	int j = r();
+		        	if (j == 0) str.push_back(rchar());
+		        	if (j == 1) str.push_back(Rchar());
+		        	if (j == 2) str.push_back(rNumb());
+		        }
+
+				vString.push_back(str);
+		}
+
+		return vString;
+	}
+
+
+	std::vector<std::string>  getRandomStringVector( int vector_size, const char* format, bool variable_size = false)
+	{
+		// not accepted negative value
+		if (vector_size < 0 || format == "") {
+			std::cout << "One of argument in random string function is negative\n";
+			return {};
+		}
+
+		// Initializing the random number seeding 
+		RNG::RG<char> rchar('a', 'z');
+		RNG::RG<char> Rchar('A', 'Z');
+		RNG::RG<char> rNumb('0', '9');
+		RNG::RG<int> Sz(0, (int)std::strlen(format)-1);
+		
+		std::vector<std::string> vString;
+
+		for (int k = 0; k < vector_size; ++k) {
+
+			char c{};
+			std::string str;
+			const char* fmt = format;
+
+			while (*fmt != 0) {
+				if (*fmt == '-') str.push_back(Rchar());
+				if (*fmt == '_') str.push_back(rchar());
+				if (*fmt == '@') str.push_back(rNumb());
+				if (*fmt != '-' && *fmt != '_' && *fmt != '@') str.push_back(*fmt);
+				fmt++;
+			}
+
+			if (variable_size) str = str.substr(0,Sz());
+			vString.push_back(str);
+		}
+
+		return vString;
+	}
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//          READ A QUOTED TEXT OR STRING BETWEEN ' OR " , AND THERE GENERALIZATION
+	//          readQuotString(const string&, char = '"');  
+	//          returned to vector<string>;
+	//           
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::vector<std::string> readQuotString(const std::string& stream, char pchar = '"') {
+
+		std::vector<std::string> vString;
+		std::string str;
+		bool start = false;
+	    
+		for (auto& c : stream ) {
+
+			if ( c == pchar) {
+				start = !start;
+				if (!str.empty()) { 
+					str = str.substr(1);
+					removeBlank(str);
+					vString.push_back(str); 
+					str.clear(); 
+				}
+			}   
+
+			if (start) {
+				str.push_back(c);
+			}
+		}
+		return vString;
+
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //    1. Put text in vector of string
+	//    2. Put text in vector of words    
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::vector<std::string> putTextInVectorLines(const std::string& text ,char Char = '\n') {
+
+		if (text.empty()) return {};
+
+		std::string line;
+		std::vector<std::string> vlines;
+
+		for (size_t i = 0; i < text.size(); ++i) {
+			if (text[i] == Char) {
+				vlines.push_back(line);
+				line = "";
+			}
+			else
+			line += text[i];
+		}
+
+		if (text[text.size() - 1] != Char) vlines.push_back(line);
+
+		return vlines;
+	}
+
+
+	std::vector<std::string> putTextInVectorWords(const std::string& text, bool(*criter)(int) = always_true) {
+
+		if (text.empty()) return {};
+
+		std::string word;
+		std::vector<std::string> vwords;
+		bool b = false;
+
+		size_t i{};
+
+		for (size_t i = 0; i < text.size();++i) {
+
+			if (std::isprint(text[i]) && !std::isblank(text[i]) && criter(text[i])) {
+				if (b) {
+				       vwords.push_back(word);
+				       word = "";
+					   b = false;
+				}
+				word += text[i];
+			}
+			else {
+				b = true;
+			}
+		}
+
+		vwords.push_back(word);
+
+		return vwords;
+	}
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //     Check if string is full of blank space  
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool isFullSpaceString(const std::string& str) {
+
+		if (str.empty()) return true;
+
+		for (auto& c : str)
+			if (!std::isblank(c)) return false;
+
+		return true;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//   Resive a vector of string.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void resizeVecString(std::vector<std::string>& vString, int new_size) {
+
+		for (auto& str : vString) str.resize(new_size);
+
+	}
+
+}
