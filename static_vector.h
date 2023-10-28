@@ -9,6 +9,11 @@ class static_vector : public std::vector<T> {
 	void reserve(const size_t);
 	void resize(const size_t);
 	void resize(const size_t, const T&);
+	//void push_back(...);
+	void emplace_back(...);
+	void emplace(...);
+	void insert(...);
+
 
 public:
 
@@ -16,7 +21,7 @@ public:
 		std::vector<T>::reserve(CAPACITY);
 	}
 
-	static_vector(size_t Size, const T& val )
+	static_vector(size_t Size, const T& val)
 	{
 		std::vector<T>::reserve(CAPACITY);
 		if (Size > CAPACITY) Size = CAPACITY;
@@ -26,7 +31,14 @@ public:
 
 	static_vector(size_t Size) : static_vector(Size,T{}){}
 
-	using std::vector<T>::vector;
+	static_vector(std::initializer_list<T> init) 
+	{
+		std::vector<T>::reserve(CAPACITY);
+
+		for (auto element : init) this->push_back(element);
+	}
+
+	~static_vector() {};
 
 	void push_back(const T& val) {
 		std::cout << "push back call\n";
@@ -37,6 +49,5 @@ public:
 		std::vector<T>::push_back(val);
 	}
 
-	template<typename...Ts>
-	decltype(auto) emplace_pack(Ts&&... vals){}
+
 };

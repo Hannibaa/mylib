@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <algorithm>
-
+#include <MyLib/Console_Library/escape_code.h>
 
 template<typename T>
 using Pair = std::pair<T, T>;
@@ -11,7 +11,7 @@ struct sPoint {
 	T x;
 	T y;
 	sPoint() : x{}, y{} {}
-	sPoint(const T& _x, const T& _y) : x{ _x }, y{ _y } {}
+	sPoint(const T& _x, const T& _y = T{}) : x{ _x }, y{ _y } {}
 
 	template<typename U>
 	sPoint<U> as() {
@@ -19,69 +19,134 @@ struct sPoint {
 	}
 };
 
-template<typename T, template<typename> class Point>
-T getCoord(const Point<T>& point, int n) {
-	T* p = (T*)&point;
-	if (n == 0) return *p;
-	if (n == 1) return *(p + 1);
-	// make assert about 
+namespace Vector_Utility {
+
+	template<typename T, template<typename> class Point>
+	T getCoord(const Point<T>& point, int n) {
+		T* p = (T*)&point;
+		if (n == 0) return *p;
+		if (n == 1) return *(p + 1);
+		// make assert about 
+	}
+
+	template<typename T>
+	T getCoord(const std::pair<T, T>& point, int n) {
+		T* p = (T*)&point;
+		if (n == 0) return *p;
+		if (n == 1) return *(p + 1);
+	}
+
+	using fPair = Pair<float>;
+
+
+	// print vector
+	template<typename T>
+	void printfVec(const std::vector< std::pair<T, T>>& vec)
+	{
+		int count{};
+		std::cout << "--- begin " << vec.size() << " : \n";
+		for (auto& v : vec) std::cout << "[" << ++count << "] " << v.first << " , " << v.second << std::endl;
+		std::cout << "--- end.\n";
+	}
+	 
+	template<typename T, template<typename> class Point >
+	T maxPoints(const std::vector<Point<T>>& vPoint, const int& compound_index)
+	{
+		//	static_assert(compound_index == 0 || compound_index == 1, "Only 0 or 1 accecpted ");
+		auto comp = [&](const Point<T>& v1, const Point<T>& v2) {
+			return getCoord(v1, compound_index) < getCoord(v2, compound_index);
+		};
+
+		auto result = std::max_element(vPoint.begin(), vPoint.end(), comp);
+
+		return getCoord(*result, compound_index);
+	}
+
+	template<typename T, template<typename> class Point >
+	T minPoints(const std::vector<Point<T>>& vPoint, const int& compound_index)
+	{
+		//	static_assert(compound_index == 0 || compound_index == 1, "Only 0 or 1 accecpted ");
+		auto comp = [&](const Point<T>& v1, const Point<T>& v2) {
+			return getCoord(v1, compound_index) < getCoord(v2, compound_index);
+		};
+
+		auto result = std::min_element(vPoint.begin(), vPoint.end(), comp);
+
+		return getCoord(*result, compound_index);
+	}
+
+
+	template<typename T, template<typename > class Point = Pair>
+	std::array<T, 4> getRect(const std::vector<Point<T>>& p) {
+		// get minimum of min_x,min_y; min_x,max_y; ...
+		std::array<T, 4> rect;
+		rect[0] = minPoints<T, Point>(p, 0);
+		rect[1] = minPoints<T, Point>(p, 1);
+		rect[2] = maxPoints<T, Point>(p, 0);
+		rect[3] = maxPoints<T, Point>(p, 1);
+
+		return rect;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    PRINTING CONTAINER THAT EQUIPED BY ITERATOR BEGAN() AND END()
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename Container>
+	void print_container(const Container& container, const std::string_view comment ="", int max_width = 35) {
+		int i{};
+		
+		Print_(color::Green, comment) << end_;
+
+		for (auto& element : container) {
+			print_ << element << " ";
+			++i;
+			if (i % max_width == 0) print_ << end_;
+
+			if (i % 11 == 10) std::cin.get();
+		}
+	}
+	 
+
+	template<typename Iter>
+	void print_container(Iter first, Iter end, int max_width = 35) {
+		int i{};
+
+		for (auto it = first; it != end; ++it) {
+			print_ << *it << " ";
+			++i;
+			if (i % max_width == 0) print_ << end_;
+		}
+	}
+
+	// OVERLOAD OF PRINT CONTAINER TO POINTER 
+	template<typename T>
+	void print_container(const T* _array, size_t Size, int max_width = 35) {
+
+		for (size_t i = 0; i != Size; ++i) {
+			print_ << _array[i] << " ";
+			if ((i+1) % max_width == 0) print_ << end_; 
+		}
+
+	}
+
+	// PRINTING CONTAINER OF TYPE MAP<KEY,T> 
+
+	void print_map(const auto comment, const auto& map) {
+
+		std::cout << ESC::Colors::_GREEN_FG << comment << RESETMODE << "{\n";
+
+		for (const auto& pair : map)
+			print_ << ESC::Colors::_YELLOW_FG << CELL(15, left, pair.first) << RESETMODE <<
+			CELL(10, left, pair.second) << end_;
+
+		print_ << "}\n";
+	}
+
 }
 
-template<typename T>
-T getCoord(const std::pair<T, T>& point, int n) {
-	T* p = (T*)&point;
-	if (n == 0) return *p;
-	if (n == 1) return *(p + 1);
-}
-
-using fPair = Pair<float>;
-
-
-// print vector
-template<typename T>
-void printfVec(const std::vector< std::pair<T, T>>& vec)
-{
-	int count{};
-	std::cout << "--- begin " << vec.size() << " : \n";
-	for (auto& v : vec) std::cout << "[" << ++count << "] " << v.first << " , " << v.second << std::endl;
-	std::cout << "--- end.\n";
-}
-
-template<typename T, template<typename> class Point > 
-T maxPoints(const std::vector<Point<T>>& vPoint, const int& compound_index)
-{
-//	static_assert(compound_index == 0 || compound_index == 1, "Only 0 or 1 accecpted ");
-	auto comp = [&](const Point<T>& v1, const Point<T>& v2) {
-		return getCoord(v1, compound_index) < getCoord(v2, compound_index);
-	};
-
-	auto result = std::max_element(vPoint.begin(), vPoint.end(), comp);
-
-	return getCoord(*result,compound_index);
-}
-
-template<typename T, template<typename> class Point >
-T minPoints(const std::vector<Point<T>>& vPoint, const int& compound_index)
-{
-	//	static_assert(compound_index == 0 || compound_index == 1, "Only 0 or 1 accecpted ");
-	auto comp = [&](const Point<T>& v1, const Point<T>& v2) {
-		return getCoord(v1, compound_index) < getCoord(v2, compound_index);
-	};
-
-	auto result = std::min_element(vPoint.begin(), vPoint.end(), comp);
-
-	return getCoord(*result, compound_index);
-}
-
-
-template<typename T, template<typename > class Point = Pair>
-std::array<T,4> getRect(const std::vector<Point<T>>& p) {
-	// get minimum of min_x,min_y; min_x,max_y; ...
-	std::array<T, 4> rect;
-	rect[0] = minPoints<T, Point>(p, 0);
-	rect[1] = minPoints<T, Point>(p, 1);
-	rect[2] = maxPoints<T, Point>(p, 0);
-	rect[3] = maxPoints<T, Point>(p, 1);
-
-	return rect;
-}
+#ifndef vu
+namespace vu = Vector_Utility;
+#endif

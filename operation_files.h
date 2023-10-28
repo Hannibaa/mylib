@@ -1,7 +1,7 @@
 
 /*
                  1/) Aoues Kadda File Byte Manipulation
-                     Created by data 01 MAY 2023
+                     Created On 01 MAY 2023
 
                  2/) Revision add some function from other header file 
                      1. makeGraphicalFile;
@@ -32,24 +32,34 @@
 #include <chrono>
 #include <memory>
 #include <map>
-#include "C:\Users\Acer\source\MyLib\stringfunctionhelper.h"
-#include "C:\Users\Acer\source\MyLib\random_generator.h"
-#include "C:\Users\Acer\source\MyLib\pathfile_utility.h"
-#include "C:\Users\Acer\source\MyLib\Bits_operation.h"
+#include <functional>
+#include "MyLib\stringfunctionhelper.h"
+#include "MyLib\random_generator.h"
+#include "MyLib\pathfile_utility.h"
+#include "MyLib\bit_utility.h"
+#include <MyLib/Console_Library/escape_code.h>
 
-#define print    std::cout 
-#define end_     '\n'
 
 using byte = unsigned char;
 
+namespace fs = std::filesystem;
 
 
 namespace File {
 
-const char* str_numeric = "0123456789";
-const char* str_Alpha = "abcdefghijklmnopqrstuvwxyz";
-const char* str_alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char* str_numeric   = "0123456789";
+const char* str_Alpha     = "abcdefghijklmnopqrstuvwxyz";
+const char* str_alpha     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    template< typename T>
+    struct Equality {
+        bool operator() (const T& x, const T& y) { return x == y; }
+    };
+
+    Equality<char> equal_func;
+
+    auto equal_char = [](char x, char y)->bool {return x == y; };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     //
@@ -60,66 +70,75 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
     template<typename Tchar>
     bool isFileExist(const std::basic_string<Tchar>& filename) {
 
-        std::basic_ifstream<Tchar> ifs{ filename, std::ios::binary };
+        fs::path file_path{ filename };
 
-        if (ifs.is_open()) { ifs.close(); return true; }
-
-        return false;
+        return fs::exists(file_path) ;
     }
 
-    ////////////////////////////////////////// Compare two file ///////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //        Compare Two file side by side
+    //        log file contain bytes of true comparaison.
+    //        make function to compare as T type 
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    size_t compareFiles(const std::string& file1, const std::string& file2, const std::string& filelog = "") {
+    template<typename Tchar1,typename Tchar2, typename BinaryEquivalenceRelation >
+    size_t compareFiles(const std::basic_string<Tchar1>& file1,                    // First  file to compare
+                        const std::basic_string<Tchar2>& file2,                    // Second file to compare
+                        BinaryEquivalenceRelation Relation    ,                    // comparaison relation '==', '!='...
+                        const std::string& filelog = ""          )                 // file that loging the changing.
+    {
 
-        size_t size1 = std::filesystem::file_size(file1);
-        size_t size2 = std::filesystem::file_size(file2);
+        fs::path file_path1{ file1 };
+        fs::path file_path2{ file2 };
 
-
-        print << "file " << file1 << " size " << size1 << end_;
-        print << "file " << file2 << " size " << size2 << end_;
+        size_t size1 = fs::file_size(file_path1);
+        size_t size2 = fs::file_size(file_path2);
 
         // check the size and path of files
         if (size1 == -1 || size2 == -1) {
-            print << "Error in check size of files, check path names \n";
+            print_ << "Error in check size of files, check path names \n";
             return -1;
         }
 
-        std::ifstream ifs1{ file1,std::ios::binary };
+        std::ifstream ifs1{ file_path1,std::ios::binary };
 
         //checking of file 1
         if (!ifs1.is_open()) {
-            print << "Error in opening a file " << file1 << end_;
+            wprint_ << "Error in opening a file " << file1 << end_;
             return -1;
         }
 
-        std::ifstream ifs2{ file2,std::ios::binary };
+        std::ifstream ifs2{ file_path2,std::ios::binary };
 
         //checking of file 2
         if (!ifs2.is_open()) {
-            print << "Error in opening a file " << file2 << end_;
+            wprint_ << "Error in opening a file " << file2 << end_;
             ifs1.close();
             return -1;
         }
 
 
         //create log file named file1file2.log
-        auto filename1 = path::getFilenamNoextension(file1);
-        auto filename2 = path::getFilenamNoextension(file2);
-        auto logfile = filename1 + filename2 + ".log";
+        auto logfile = file_path1.stem().string() + file_path2.stem().string() + ".log";
 
         if (filelog != "") {
             logfile.clear();
             logfile = filelog + ".log";
         }
+        
+        fs::path log_path = file_path1.parent_path().string() + "\\" + logfile;
 
         //open file log for writing
-        std::ofstream log{ logfile,std::ios::binary };
+        std::ofstream log{ log_path,std::ios::binary };
         if (!log.is_open()) {
-            print << "error in opening log file \n";
+            print_ << "error in opening log file \n";
             ifs1.close();
             ifs2.close();
             return -1;
         }
+
         size_t count{};
         // loop for comparing files
         while (true) {
@@ -130,52 +149,55 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
             }
 
             // comparaison to ifs2
-            if (ifs2.get() == c) {
+            if ( Relation(ifs2.get(),c) ) {
                 log.put(c); ++count;
             }
 
             if (ifs2.eof()) break;
         }
 
-        print << "End of comparaison ...\n";
+        print_ << "End of comparaison ...\n";
 
         log.close();
         ifs2.close();
         ifs1.close();
+
         return count;
+    }
+
+    // Overloading compare file :
+    template<typename Tchar1, typename Tchar2 >
+    size_t compareFiles(const std::basic_string<Tchar1>& file1, const std::basic_string<Tchar2>& file2) {
+
+        return compareFiles(file1, file2, File::equal_char);
+
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
     //      CONCAT TWO FILE TO END OF ANOTHER FILE 
     //      WILL size byte FROM POSITION pos.
+    //      1. existence of files should be checked before;
     // 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    void concatFiles(const std::string& file1, const std::string& file2, size_t size = -1, size_t pos = -1) {
+    void concatFiles(const fs::path& file_path1, const fs::path& file_path2, size_t size = -1, size_t pos = -1) {
 
-        size_t size1 = std::filesystem::file_size(file1);
-        size_t size2 = std::filesystem::file_size(file2);
+        size_t size2 = std::filesystem::file_size(file_path2);
 
-        // check the size and path of files
-        if (size1 == -1 || size2 == -1) {
-            print << "Error in check size of files, check path names \n";
-            return;
-        }
-
-        std::ofstream ofs1{ file1,std::ios::binary | std::ios::app };
+        std::ofstream ofs1{ file_path1,std::ios::binary | std::ios::app };
 
         //checking of file 1
         if (!ofs1.is_open()) {
-            print << "Error in opening a file " << file1 << end_;
+            print_ << "Error in opening a file " << file_path1 << end_;
             return;
         }
 
-        std::ifstream ifs2{ file2,std::ios::binary };
+        std::ifstream ifs2{ file_path2,std::ios::binary };
 
         //checking of file 2
         if (!ifs2.is_open()) {
-            print << "Error in opening a file " << file2 << end_;
+            print_ << "Error in opening a file " << file_path2 << end_;
             ofs1.close();
             return;
         }
@@ -196,10 +218,79 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
             ofs1.put(c);
         }
 
-        print << "concat two files finished\n";
+        print_ << "concat two files finished\n";
 
         ofs1.close();
         ifs2.close();
+    }
+
+    // inscript information about file[name][and size][and how much copying]
+
+    void write_info_(const fs::path& file_name, const std::string& info_file_path, size_t size_file,
+                      std::ios::openmode open_mode = std::ios::app) {
+
+        std::ofstream ofs{ file_name, open_mode };
+
+        if (!ofs.is_open()) {
+            Print_(color::Green, "Problem of opening file") << end_;
+            return;
+        }
+
+        ofs << info_file_path << end_;
+        ofs << size_file << end_;
+
+        ofs.close();
+    }
+
+    // read information from that file 
+    
+    std::vector<std::pair<std::string,size_t>> read_info_(const fs::path& file_name) {
+
+        std::ifstream ifs{ file_name };
+
+        if (!ifs.is_open()) {
+            Print_(color::Green, "file is not exist or not open correctly") << end_;
+            return {};
+        }
+
+        std::vector<std::pair<std::string, size_t>> vec_info;
+        std::string path;
+        size_t size{};
+
+        while (true) {
+            ifs >> path;
+            ifs >> size;
+
+            if (ifs.eof()) break;
+
+            vec_info.push_back(std::pair(path, size));
+        }
+
+        ifs.close();
+        return vec_info;
+    }
+
+    // modified these file like remove n'file 
+
+    void remove_info_(const fs::path& file_name, unsigned int n) {
+
+        auto vec_info = read_info_(file_name);
+
+        n = n - 1;
+
+        // check n with size
+        if (n > vec_info.size()) {
+            Print_(color::Green, "Error!!!?...., check number of files") << end_;
+            return;
+        }
+
+        vec_info.erase(vec_info.begin() + n);
+            write_info_(file_name, vec_info[0].first, vec_info[0].second, std::ios::out);
+        for (int i = 1; i < vec_info.size(); ++i) {
+            write_info_(file_name, vec_info[i].first, vec_info[i].second);
+        }
+
+        Print_(color::Red, "End of change....") << end_;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -216,22 +307,22 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         size_t sz = std::filesystem::file_size(filename);
 
         if (sz == -1) {
-            print << "error in file " << filename << end_;
+            print_ << "error in file " << filename << end_;
             return;
         }
         else if (sz < position) {
-            print << "error in position value, greater than size of file \n";
+            print_ << "error in position value, greater than size of file \n";
             return;
         }
         else if (sz < size) {
-            print << "error in size to be extracted, greater than size of file\n";
+            print_ << "error in size to be extracted, greater than size of file\n";
             return;
         }
 
         std::ifstream ifs{ filename, std::ios::binary };
         // check is open
         if (!ifs.is_open()) {
-            print << "Error in opening file ...\n";
+            print_ << "Error in opening file ...\n";
             return;
         }
 
@@ -242,7 +333,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         std::ofstream ofs{ tofile, std::ios::binary };
 
         if (!ofs.is_open()) {
-            print << "error in opening or creating " << tofile << end_;
+            print_ << "error in opening or creating " << tofile << end_;
             ifs.close();
             return;
         }
@@ -254,14 +345,14 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
             char c{};
             ifs.get(c);
             if (ifs.eof()) {
-                print << "file finished \n";
+                print_ << "file finished \n";
                 break;
             }
 
             ofs.put(c);
         }
 
-        print << "process is finished\n";
+        print_ << "process is finished\n";
 
         //extfile = tofile;
 
@@ -269,7 +360,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         ifs.close();
 
         auto d = std::chrono::duration<float>{ std::chrono::steady_clock::now() - tp };
-        print << "duration is seconds : " << d.count() << end_;
+        print_ << "duration is seconds : " << d.count() << end_;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,17 +376,17 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         // check size of file with size and pos
         size_t file_size = std::filesystem::file_size(filename);
         if (file_size == -1) {
-            print << "Error in opening file " << filename << " check \n";
+            print_ << "Error in opening file " << filename << " check \n";
             return;
         }
 
         if (size > file_size) {
-            print << "Check size to be extracted in array \n";
+            print_ << "Check size to be extracted in array \n";
             return;
         }
 
         if (pos + size > file_size) {
-            print << "Check a position to start extrac data to array \n";
+            print_ << "Check a position to start extrac data to array \n";
             return;
         }
 
@@ -304,7 +395,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         std::ifstream ifs{ filename };
 
         if (!ifs.is_open()) {
-            print << "Error in opening of file " << filename << end_;
+            print_ << "Error in opening of file " << filename << end_;
             return;
         }
 
@@ -318,7 +409,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         std::ofstream ofs{ iarray };
 
         if (!ofs.is_open()) {
-            print << "Error in creation of file " << iarray << end_;
+            print_ << "Error in creation of file " << iarray << end_;
             ifs.close();
             return;
         }
@@ -341,11 +432,11 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         ofs << "char arrayFile[" << size << "] = \n { ";
 
         for (size_t i = 0; i < size - 1; i++) {
-            ofs << bop::toHex(ptr[i]) << " , ";
+            ofs << Bit::toHex(ptr[i]) << " , ";
             if ((i + 1) % N == 0) ofs << end_;
         }
 
-        ofs << bop::toHex(ptr[size - 1]) << " };\n";
+        ofs << Bit::toHex(ptr[size - 1]) << " };\n";
 
         delete[] ptr;
         ofs.close();
@@ -365,7 +456,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         size_t file_size = std::filesystem::file_size(filename);
 
         if (file_size == -1) {
-            print << "Error in opening file " << filename << end_;
+            print_ << "Error in opening file " << filename << end_;
             return;
         }
 
@@ -378,14 +469,14 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         std::ifstream ifs{ filename,std::ios::binary };
 
         if (!ifs.is_open()) {
-            print << "Error in opening file ... check path \n";
+            print_ << "Error in opening file ... check path \n";
             return;
         }
 
         std::ofstream ofs{ datafile };
 
         if (!ofs.is_open()) {
-            print << "Error in opening file ... \n";
+            print_ << "Error in opening file ... \n";
             ifs.close();
             return;
         }
@@ -417,7 +508,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
         }
 
-        print << "Process end ...\n";
+        print_ << "Process end ...\n";
 
         ofs.close();
         ifs.close();
@@ -449,7 +540,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         static uint32_t records = 0;
 
         if (!isFileExist(historicfile)) {
-            print << "file not existed " << end_;
+            print_ << "file not existed " << end_;
 
             // make one new; need header historic :{date}
             std::ofstream ofs{ historicfile };
@@ -474,7 +565,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
         records = number;
 
-        print << historic << " records " << number << end_;
+        print_ << historic << " records " << number << end_;
 
         fstr.seekp(0,std::ios::end);
         ++records;
@@ -738,5 +829,6 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
         return vPoint;
     }
+
 
 }

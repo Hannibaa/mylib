@@ -13,65 +13,6 @@ namespace Bit {
 
 	enum Bit { Zero = 0, One };
 
-	typedef unsigned char Byte;
-
-	union int_float {
-		unsigned int i;
-		float f;
-	};
-
-	union int64_double {
-		int64_t i;
-		double d;
-	};
-
-
-	//template<typename T, int N = sizeof(T)>
-	//union byte_type {
-	//	T type;
-	//	Byte byte[N];
-	//};
-
-
-	//template<typename T>
-	//std::ostream& operator << (std::ostream& os, byte_type<T> _data) {
-	//	int sz = sizeof(T);
-	//	for (int i = 0; i < sz; i++) {
-	//		os << (int)_data.byte[i] << " , ";
-	//	}
-	//	return os;
-	//}
-
-	template<typename T>
-	std::vector<short> bit_of_(T x) {
-		short sz = 8 * sizeof(T);
-		std::vector<short> v_bit;
-
-		std::cout << "type is of " << sz << " bits\n";
-
-		for (size_t n = 0; n < sz; n++)
-			v_bit.push_back(short((x & (1 << n)) >> n));
-
-		return v_bit;
-	}
-
-	template<>
-	std::vector<short> bit_of_<float>(float x) {
-
-		int_float _x; _x.f = x;
-
-		return bit_of_<unsigned int>(_x.i);
-	}
-
-	template<>
-	std::vector<short> bit_of_<double>(double x) {
-
-		int64_double _x; _x.d = x;
-
-		return bit_of_<int64_t>(_x.i);
-	}
-
-
 	std::ostream& operator << (std::ostream& os, std::vector<short> v_bit) {
 
 		for (int i = 0; i < v_bit.size(); i++)
@@ -125,19 +66,6 @@ namespace Bit {
 	}
 
 	// get a bit at position 'n'
-	template<typename T, int N = sizeof(T)>
-	int get_bit_at_c(T x, int n) {
-		if (n < 0 || n > N * 8) { std::cout << "number of bit is out of size of type\n"; return T{}; }
-
-		Byte* pbyte = (Byte*)&x;
-
-		int _n = n / 8;
-		int __n = n % 8;
-
-		_n = (*(pbyte + _n) & (1 << __n)) >> __n;
-
-		return _n;
-	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -145,15 +73,6 @@ namespace Bit {
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template<typename T, int N = sizeof(T)>
-	Byte get_byte_at_c(T x, int n) {
-
-		if (n < 0 || n > N) { std::cout << "number of bit is out of size of type\n"; return T{}; }
-
-		Byte* pbyte = (Byte*)&x;
-
-		return *(pbyte + n);
-	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -182,17 +101,6 @@ namespace Bit {
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	template<typename T, int N = sizeof(T)>   // use pointer
-	T set_bit_at(T x, int n) {
-		if (n < 0 || n > 8 * N) { std::cout << "number of bit is out of size of type\n"; return T{}; }
-		Byte* pbyte = (Byte*)&x;
-
-		int _n = n / 8;
-		int __n = n % 8;
-
-		*(pbyte + _n) = *(pbyte + _n) | (1 << __n);
-		return x;
-	}
 
 	template<typename T>   // use pointer
 	T off_bit_at(T x, int n) {

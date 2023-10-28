@@ -9,10 +9,18 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
-#include "C:\Users\Acer\source\MyLib\random_generator.h"
+#include <map>
+#include "MyLib\random_generator.h"
 
+#ifndef fs
+namespace fs = std::filesystem;
+#endif
 
 namespace Str{
+	// alphabet 
+	const char* alphabet = "abcdefghijklmnopqrstuvwxyz";
+	const char* ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	const char* Number   = "0123456789";
 
 	// function to check character always true
 	bool always_true(int) { return true; }
@@ -21,17 +29,65 @@ namespace Str{
 
 	using byte = unsigned char;
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//     CODING A STRING OF 8 CARACTER IN INTEGER OF 8 BIT.
+	//     REVERSE OPERATION .   
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	uint64_t str_to_integer(std::string_view word_8_chars) {
+		int l = word_8_chars.length();
+		if (l > 8) {
+			std::cout << "the length of word is more than 8 characters\n";
+			return {};
+		}
+
+		char c[8]{};
+		for (int i = 0; i < l; ++i) c[i] = word_8_chars[i];
+
+		return std::bit_cast<uint64_t>(c);
+	}
+
+	template<typename T>
+	std::string integer_to_str(const T& value) {
+		static_assert(std::is_integral_v<T>, "T should be integer type");
+
+		char* c = (char*)&value;
+
+		return std::string(c, c + sizeof(T));
+	}
+
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	//                   Is Alpha Numeric Character
+	//                   Is Alphabet Character
+	//                   All ctype functions here to char c;
 	//
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	bool isalnum(char c) {
 		
-		return (c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123);
+		//return (c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123);
 
+		return std::isalnum(static_cast<unsigned char>(c));
 	}
+
+	bool isalphabet(char c) {
+		//return (c > 64 && c < 91) || (c > 96 && c < 123);
+		return std::isalpha(static_cast<unsigned char>(c));
+	}
+
+	bool isblank(char c) {
+		return std::isblank(static_cast<unsigned char>(c));
+	}
+
+	bool isprint(char c) {
+		return std::isprint(static_cast<unsigned char>(c));
+	}
+
+	
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -46,6 +102,31 @@ namespace Str{
 			std::swap(str[i], str[l - i - 1]);
 		}
 		return str;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//      convert string to lower or upper case alphabet
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string str_tolower(std::string s)
+	{
+		std::transform(s.begin(), s.end(), s.begin(),
+			// static_cast<int(*)(int)>(std::tolower)         // wrong
+			// [](int c){ return std::tolower(c); }           // wrong
+			// [](char c){ return std::tolower(c); }          // wrong
+			[](unsigned char c) { return std::tolower(c); } // correct
+		);
+		return s;
+	}
+
+	std::string str_toupper(std::string s)
+	{
+		std::transform(s.begin(), s.end(), s.begin(),
+			[](unsigned char c) { return std::toupper(c); } // correct
+		);
+		return s;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -337,6 +418,35 @@ namespace Str{
 		return vStr;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//      LOAD FILE IN STRING
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string LoadFileToString(const fs::path& filename) {
+
+		std::ifstream ifs{ filename };
+
+		if (!ifs.is_open()) {
+			std::cout << "error in Opening file " << filename << '\n';
+			return {};
+		}
+
+		std::string tempString;
+
+		while (!ifs.eof()) {
+			char c{};
+			ifs.get(c);
+			tempString.push_back(c);
+		}
+
+		ifs.close();
+
+		return tempString;
+	}
+
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
 	//                  PRINT VECTOR OF STRING 
@@ -362,6 +472,28 @@ namespace Str{
 		}
 
 	}
+
+	// print v 2
+	template<typename Tchar>
+	void PrintWords2(const std::vector <std::basic_string<Tchar>>& vStr, int line = 60, char Esp = ' ') {
+
+		if (vStr.size() == 0) return;
+
+		int n{};
+		std::cout << " ";
+		for (auto& w : vStr) {
+			std::cout << std::setw(w.size()) << std::left << w;
+			std::cout << std::setw(2) << std::left << Esp;
+			n += w.size();
+			if (n > line) {
+				n = 0;
+				std::cout << '\n';
+				std::cin.get();
+			}
+		}
+
+	}
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
@@ -600,7 +732,7 @@ namespace Str{
 
 		for (size_t i = 0; i < text.size();++i) {
 
-			if (std::isprint(text[i]) && !std::isblank(text[i]) && criter(text[i])) {
+			if (isprint(text[i]) && isblank(text[i]) && criter(text[i])) {
 				if (b) {
 				       vwords.push_back(word);
 				       word = "";
@@ -617,6 +749,45 @@ namespace Str{
 
 		return vwords;
 	}
+
+	// using sstream 
+	std::vector<std::string> StringToWords(const std::string& text) {
+
+		std::vector<std::string> vec_words;
+		std::istringstream  istr_stream(text);
+
+		for (std::string buf; istr_stream >> buf;) vec_words.push_back(buf);
+
+		return vec_words;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    FUNCTION GET ALPHABETIC WORDS AND PUT THEM IN VECTOR OF STRINGS.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::vector<std::string> get_alpha_words(const std::string_view text) {
+
+		std::string word;
+		std::vector<std::string> vec_str;
+
+		for (auto ichar = text.begin(); ichar != text.end(); ++ichar) {
+			if (isalphabet(*ichar)) word.push_back(*ichar);
+			else {
+				if (!word.empty()) {
+					vec_str.push_back(word);
+					word.clear();
+				}
+			}
+		}
+
+		if (!word.empty())
+			vec_str.push_back(word);
+
+		return vec_str;
+	}
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
@@ -643,6 +814,69 @@ namespace Str{
 	void resizeVecString(std::vector<std::string>& vString, int new_size) {
 
 		for (auto& str : vString) str.resize(new_size);
+
+	}
+
+
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//      MAPPING OF CHARS AND WORDS LEXICOGRAPHICS IN TEXT
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// mapping all char repitition in text (char statistique).
+
+	std::map<char, uint32_t> get_mapping_character_in_text(const std::string_view text) {
+
+		std::map<char, uint32_t> char_map;
+
+		//char_map[text[0]] = 0;
+
+		for (auto& Char : text) {
+			++char_map[Char];
+		}
+
+		return char_map;
+	}
+
+
+
+	// mapping words repitition in text (words statistiques).
+
+	std::map<std::string, uint32_t> get_mapping_word_in_text(const std::string_view text) {
+
+		std::map<std::string, uint32_t> word_map;
+
+		std::stringstream str_stream{ std::string(text) };
+
+		std::string word;
+
+		while (str_stream >> word) {
+			// we need function that remove any un-alphabet character from a word
+			// what?{what} , end-of{end,of} , get_value_from() {get,value,from},...
+
+			auto vec_words = Str::get_alpha_words(word);
+
+			for (auto& Word : vec_words)
+				++word_map[Word];
+
+			word.clear();
+		}
+
+		return word_map;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    FUNCTION IS_ONE_OF().
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool is_one_of(char c, const std::string_view chars) {
+
+		return std::find(chars.begin(), chars.end(), c) != chars.end();
 
 	}
 

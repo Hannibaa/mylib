@@ -1,3 +1,23 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ *                          Platform Independent                             *
+ *                  Open Dialogue for Console Application                    *
+ *                                                                           *
+ * Author: KADDA Aoues - haoues_k@yahoo.fr - 2023                            *
+ * URL :                                                                     *
+ *                                                                           *
+ *                                                                           *
+ * Copyright notice:                                                         *
+ * Free use of the                                                           *
+ * is permitted under the guidelines and in accordance with the most current *
+ * version of the MIT License.                                               *
+ * http://www.opensource.org/licenses/MIT                                    *
+ *                                                                           *
+ *****************************************************************************
+*/
+
+
 #pragma once
 
 #include <windows.h>
@@ -5,12 +25,6 @@
 #include <ShlObj.h>
 #include <string>
 
-/*
-    Create Class that can handle all these functionality to be used in console application
-
-    This very interesting :
-
-*/
 
 _COMDLG_FILTERSPEC default_ext[]{
     { L"default *.*" ,L"*.*" }
@@ -158,7 +172,7 @@ namespace opendialog {
     //
     /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    std::wstring OpenFile(const wchar_t* title, const _COMDLG_FILTERSPEC extensions = empty_ext)
+    std::wstring OpenFile(const wchar_t* title = L"File", const _COMDLG_FILTERSPEC extensions = empty_ext)
     {
         //Extension Array
 

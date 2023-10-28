@@ -2,12 +2,12 @@
 
 template<typename T1, typename T2>
 bool greaterSize(const T1& o1, const T2& o2) {
-	return sizeof(o1) > sizeof(o2);
+	return sizeof(T1) > sizeof(T2);
 }
 
 template<typename T1, typename T2>
 bool equalSize(const T1& o1, const T2& o2) {
-	return sizeof(o1) == sizeof(o2);
+	return sizeof(T1) == sizeof(T2);
 }
 
 template<typename T1, typename T2>

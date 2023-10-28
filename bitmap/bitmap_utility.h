@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\Users\Acer\source\MyLib\bitmap\bitmap_image.hpp"
+#include "MyLib\bitmap\bitmap_image.hpp"
 
 
 #define end_ '\n'

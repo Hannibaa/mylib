@@ -39,4 +39,26 @@ namespace Math {
         if (Set(x,ts...)) return 1;
         return 0;
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //    FLOATING OPERATION 
+    //      1. increment in float and double
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    float float_inc(float& f, int inc = 1) noexcept {
+
+        *(int*)&f += f > 0 ? inc : -inc;
+
+        return f;
+    }
+
+    double float_inc(double& f, int64_t inc = 1) noexcept {
+
+        *(int64_t*)&f += f > 0 ? inc : -inc;
+
+        return f;
+
+    }
+
 }

@@ -54,13 +54,13 @@ namespace Bit {
 
 	///////////////////////////////// to hexadecimal convertion /////////////////////////////////////////
 
-	std::string toHex(char c) {
+	std::string char_to_Hex(char c) {
 
 		return "0x" + std::string{Base16[(c & 0xf0) >> 4]} + std::string{Base16[c & 0x0f]};
 
 	}
 
-	std::string toHex(short s) {
+	std::string short_t_oHex(short s) {
 
 		return "0x" + std::string{Base16[(s & 0xf000)>>12]} + std::string{ Base16[(s & 0x0f00) >> 8] } 
 		            + std::string{ Base16[(s & 0x00f0) >> 4] } + std::string{ Base16[s & 0x000f] };

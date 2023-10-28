@@ -1,5 +1,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-//
+//                                   Author    : KADDA AOUES.
+//                                   Title     : random_generator
+//                                   Date      : ?? / ?? / 2023
+//                                   Licence   : Under licence of author.
+//                                   Namespace : RNG
 //                                   RANDOM NUMBER GENERATORS , RNG.    
 //
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,8 +29,8 @@ namespace RNG {
 	template<typename Type = void>
 	class RG {
 
-		using T = typename std::conditional<std::is_integral<Type>::value, Type, int>::type;
-		using F = typename std::conditional<std::is_floating_point<Type>::value, Type, float>::type;
+		using T = typename std::conditional<std::is_integral_v<Type>, Type, int>::type;
+		using F = typename std::conditional<std::is_floating_point_v<Type>, Type, float>::type;
 
 		std::random_device rdevice;
 		std::mt19937 engine;
@@ -178,8 +182,6 @@ namespace RNG {
 		}
 
 	};
-
-	
 
 }
 

@@ -5,9 +5,12 @@
 #include <chrono>
 #include <MyLib/Console_Library/escape_code.h>
 
+//#include <MyLib/chrono/to_day.h>
 // make macro to construct 7 cell :
 
 using uint = unsigned int;
+
+namespace chr = std::chrono;
 
 namespace Calendar {
 
@@ -16,6 +19,8 @@ namespace Calendar {
 	std::string DAYNAME2[] = { "Mo","Tu","We","Th","Fr","Sa","Su" };
 	std::string DAYNAME3[] = { "Mon","Tue","Wed","Thu","Fri","Sat","Sun" };
 	std::string _DAYNAME[] = { "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday" };
+
+	//
 
 	constexpr int day_index(int day, int index) {
 		return 8 - (day + 7 - index) % 7;
@@ -177,6 +182,37 @@ namespace Calendar {
 		uint val = 8 - (d + 7 - index) % 7;
 
 		Month(uint(ymd.month()), val, uint(ymd.day()));
+
+	}
+
+	// FUNCTION INDEX OF DAY NUMBER 1 OF MONTH AND YEAR
+
+	int day_one(chr::month m, chr::year y) {
+		return {};
+	}
+
+	int day_one(chr::year y) {
+		return day_one(chr::January, y);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//                  YEAR CALENDER
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void makeMonths() {
+
+		for (int i = 0; i < 12; ++i) {
+			std::cout << CELL(6, right, MONTHS[i].first);
+			std::cout << SPACE(3);
+		}
+
+		newline_;
+	}
+
+	void Year(const chr::year year) {
 
 	}
 
