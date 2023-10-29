@@ -2,6 +2,12 @@
 #include <MyLib/strings/CGlyph.h>
 #include <MyLib/stringfunctionhelper.h>
 
+/*
+              title  : Word class implementation
+			  author : KADDA Aoues
+			  date   : 23 / 10 / 2023
+			  Note : 
+*/
 
 
 
@@ -21,7 +27,7 @@ namespace text {
 		}
 
 	public:
-		CWord(const std::string& string, const std::string_view color)
+		CWord(const std::string& string, const std::string_view color = ESC::Colors::_WHITE_FG)
 			: _color{color}
 		{
 
@@ -30,7 +36,7 @@ namespace text {
 			auto _string = word_trait(string);
 
 			for (const auto& c : _string) {
-				_word.emplace_back(c,color);
+				_word.emplace_back(c,_color);
 			}
 		}
 
@@ -57,7 +63,7 @@ namespace text {
 			return _word.size();
 		}
 
-
+		// Friend function
 
 		friend std::ostream& operator << (std::ostream& os, const CWord& word) {
 			for (const auto& g : word._word)
