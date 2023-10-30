@@ -32,3 +32,7 @@
 *.app
 *.wsuo
 *.json
+*.db
+*.db-shm
+*.db-wal
+*.opendb
