@@ -751,7 +751,7 @@ namespace Str{
 	}
 
 	// using sstream 
-	std::vector<std::string> StringToWords(const std::string& text) {
+	std::vector<std::string> TextToWords(const std::string& text) {
 
 		std::vector<std::string> vec_words;
 		std::istringstream  istr_stream(text);
