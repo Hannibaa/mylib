@@ -182,6 +182,18 @@ namespace Str{
 		return str;
 	}
 
+	std::string removeUnusefullCharAny(std::string _str, const std::string Nchar = " \n") {
+
+		if (_str.empty()) return {};
+
+		for (auto& c : Nchar)
+		{
+			_str = removeUnusefullCharAny(_str, c);
+		}
+
+		return _str;
+	}
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     //
