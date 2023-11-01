@@ -5,7 +5,7 @@
 			 Date   : ?? / ?? / 2023
 			 1. TIME - DATE -
 			 2. HEADER FILE -- TODAY.H --
-
+			 3. Add String() function 1.11.23
 */
 
 
@@ -36,6 +36,11 @@ class ToDay {
 	}
 
 public:
+
+	static std::string String() {
+		update();
+		return str;
+	}
 
 	static auto second() { 
 		update();
@@ -90,6 +95,10 @@ public:
 
 	static auto date() {
 		return sys_days(time_point_cast<days>(system_clock::now()));
+	}
+
+	static std::string date_hour() {
+
 	}
 };
 
