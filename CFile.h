@@ -73,6 +73,27 @@ namespace File {
 			create_file();
 		}
 
+		template<typename Iter>
+		requires std::same_as<Iter,std::vector<CharType>::iterator>
+		CFile(Iter IterBegin, Iter IterEnd)            // to > from and to < size.
+			: CFile(static_cast<size_t>(std::distance(IterBegin,IterEnd)))
+		{
+			std::copy(IterBegin,IterEnd, data_.begin());
+		}
+
+		CFile(CFile& file, size_t size, size_t position = 0i64)
+			:CFile(file.begin()+position, file.begin()+position + size - 1)
+		{}
+
+		// define iterator for CFile is better !!!
+		std::vector<CharType>::iterator begin() noexcept {
+			return data_.begin();
+		}
+
+		std::vector<CharType>::iterator end() noexcept {
+			return data_.end();
+		}
+
 		std::string name() const {
 			return name_file_;
 		}
@@ -195,6 +216,11 @@ namespace File {
 				data_type.emplace_back(*(ptr + i));
 
 			return data_type;
+		}
+		
+		template<>
+		std::vector<CharType> getdataAs<CharType>() {
+			return data_;
 		}
 
 		template<typename NType>
