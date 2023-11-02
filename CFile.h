@@ -195,6 +195,23 @@ namespace File {
 			ofs.close();
 		}
 
+		// save a region of files to new created file
+		void save_region(const fs::path& file_name, size_t _size, size_t _position) {
+
+			std::vector<CharType> _data_(data_.begin() + _position, data_.begin() +
+				                                                         _position + _size - 1);
+			std::ofstream ofs{ file_name, std::ios::binary };
+
+			if (!ofs) {
+				std::cout << "Failed! to opening file or creating file\n";
+				return;
+			}
+
+			ofs.write(reinterpret_cast<const char*>(_data_.data()), _data_.size() * sizeof(CharType));
+
+			ofs.close();
+		}
+
 		template<typename NType>
 		std::vector<NType> getdataAs() {
 			static_assert(std::is_trivially_copyable_v<NType>, "NType should be copyable(POD) data type");
@@ -267,6 +284,23 @@ namespace File {
 			text.clear();
 			text.reserve(file_size_ + 1);
 			for (auto& element : data_) text.push_back(static_cast<char>(element));
+		}
+
+		void Splite_In(const fs::path& directory , size_t Size, const std::string& identity)
+		{
+			// should be check directory existence and size file out not more than file_max!!
+
+			size_t n_files = file_size_ / Size;
+			size_t rest_size = file_size_ - n_files * Size;
+			
+			std::string file_name_ = directory.string() + "\\" + name_file_ + "_" + identity + "_";
+
+			for (int k = 0; k != n_files; ++k) {
+
+				std::string file_ = file_name_ + std::to_string(k);
+
+				save_region(file_, Size, k * Size);
+			}
 		}
 
 	private:
