@@ -62,8 +62,8 @@ namespace File {
 			get_file_data();
 		}
 
-		CFile(size_t file_size)
-			:file_name_{}
+		CFile(const fs::path& file_name, size_t file_size)
+			:file_name_{file_name}
 			,file_size_{file_size}
 			, name_file_{}
 			, path_file_{}
@@ -71,18 +71,19 @@ namespace File {
 			,key_{""}
 		{
 			create_file();
+			get_file_data();
 		}
 
 		template<typename Iter>
 		requires std::same_as<Iter,std::vector<CharType>::iterator>
-		CFile(Iter IterBegin, Iter IterEnd)            // to > from and to < size.
-			: CFile(static_cast<size_t>(std::distance(IterBegin,IterEnd)))
+		CFile(const fs::path& file_name,Iter IterBegin, Iter IterEnd)            // to > from and to < size.
+			: CFile(file_name, static_cast<size_t>(std::distance(IterBegin,IterEnd)))
 		{
 			std::copy(IterBegin,IterEnd, data_.begin());
 		}
 
 		CFile(CFile& file, size_t size, size_t position = 0i64)
-			:CFile(file.begin()+position, file.begin()+position + size - 1)
+			:CFile(file.name(), file.begin() + position, file.begin() + position + size - 1)
 		{}
 
 		// define iterator for CFile is better !!!
@@ -94,8 +95,8 @@ namespace File {
 			return data_.end();
 		}
 
-		std::string name() const {
-			return name_file_;
+		fs::path name() const {
+			return file_name_;
 		}
 
 		void setName(const std::string_view name_file) {
@@ -180,6 +181,21 @@ namespace File {
 			key_ = key;
 		}
 
+		void save() {
+			//check the file name is not empty;
+			
+			std::ofstream ofs{ file_name_,std::ios::binary };
+
+			if (!ofs.is_open()) {
+				Print_(color::Red, "fail!! to save file") << end_;
+				return;
+			}
+
+			ofs.write(reinterpret_cast<const char*>(data_.data()), data_.size() * sizeof(CharType));
+
+			ofs.close();
+		}
+
 		template<typename CharT>
 		void save_file(const std::basic_string<CharT>& file_name) const {
 
@@ -196,10 +212,16 @@ namespace File {
 		}
 
 		// save a region of files to new created file
-		void save_region(const fs::path& file_name, size_t _size, size_t _position) {
+		void save_region(const fs::path& file_name, size_t _size, size_t _position) const {
+
+			// check size and _position
+			if (_position + _size > data_.size()) {
+				Print_(color::Red, "check position and size") << end_;
+				return;
+			}
 
 			std::vector<CharType> _data_(data_.begin() + _position, data_.begin() +
-				                                                         _position + _size - 1);
+				                                                         _position + _size );
 			std::ofstream ofs{ file_name, std::ios::binary };
 
 			if (!ofs) {
@@ -286,14 +308,14 @@ namespace File {
 			for (auto& element : data_) text.push_back(static_cast<char>(element));
 		}
 
-		void Splite_In(const fs::path& directory , size_t Size, const std::string& identity)
+		void Splite_In(const fs::path& directory , size_t Size, const std::string& identity) const
 		{
 			// should be check directory existence and size file out not more than file_max!!
 
 			size_t n_files = file_size_ / Size;
 			size_t rest_size = file_size_ - n_files * Size;
 			
-			std::string file_name_ = directory.string() + "\\" + name_file_ + "_" + identity + "_";
+			std::string file_name_ = directory.string() + "\\" + identity + "_";
 
 			for (int k = 0; k != n_files; ++k) {
 
@@ -315,6 +337,12 @@ namespace File {
 		size_t                file_size_;
 
 		std::vector<CharType> data_;
+
+		// trait of file name
+		std::string get_full_path_name() {
+			NOT_IMPL;
+			return{};
+		}
 
 		void get_file_data() {
 
@@ -368,3 +396,34 @@ namespace File {
 	};
 
 } 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+//             FILE FUNCTION 
+// 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace File {
+
+	template<typename T>
+	void save_to_file(const std::vector<T>& data, const fs::path& file_name) {
+
+		static_assert(std::is_trivially_copyable_v<T>, "type T should be POD type");
+
+		if (fs::exists(file_name) || data.empty()) {
+			Print_(color::Red, "Need to create new file Or data is empty") << end_;
+			return;
+		}
+
+		std::ofstream ofs{ file_name, std::ios::binary };
+
+		if (!ofs.is_open()) {
+			Print_(color::Red, "Fail! to open file") << end_;
+			return;
+		}
+
+		ofs.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(T));
+	}
+
+}
