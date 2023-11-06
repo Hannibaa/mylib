@@ -6,6 +6,7 @@
 			 1. TIME - DATE -
 			 2. HEADER FILE -- TODAY.H --
 			 3. Add String() function 1.11.23
+			 4. Add extern function get_serial_at_time() function
 */
 
 
@@ -13,7 +14,9 @@
 
 #pragma once
 #include <utility>
+#include <string_view>
 #include <MyLib/Calender_utility.h>
+#include <MyLib/random_generator.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
@@ -103,3 +106,59 @@ public:
 };
 
 std::string ToDay::str;
+
+namespace to_day {
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    THIS FUNCTION WILL RETURN IN TIME DATE DDMMYYHHMMSS AS SERIAL NUMBER. 
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	std::string get_serial_at_time() {
+
+		auto str_time = ToDay::String();
+		    str_time = Str::removeUnusefullCharAny(str_time, "-: ");
+		return str_time;
+	}
+
+	// NEED FUNCTION THAT RETURN STRING AND CHRONO DATE IN RANDOM NUMBER.
+	// NEED FUNCTION THAT RETURN STRING AND CHRONO TIME IN HOUR AND SECOND AND MINUTE
+
+	// Need format = "hh:mm:ss", or "hh mm ss" or "hh===ss===mmmm", 
+	// here should be double letter h m s or H M S, so we used in double or single
+	// so what happen if "h:mm:sss" so what can gave us this format will investigate after.
+
+	std::string get_random_hour(const std::string_view format) {
+
+		// here we check the format how it made
+		std::string str{format};
+		// check if is valide format
+ 
+		for (int i = 0; i < format.size(); ++i) {
+			switch (format[i]) {
+			case 'h':
+			case 'H': str[i] = rand()%12;
+				continue;
+			case 'm':
+			case 'M': str[i] = rand() % 60;
+				continue;
+			case 's':
+			case 'S': str[i] = rand() % 60;
+				continue;
+			}
+		}
+
+		return {};
+	}
+
+	std::string get_random_date() {
+
+
+		return {};
+	}
+
+	std::chrono::sys_days str_to_date(const std::string& str_date);
+
+}
