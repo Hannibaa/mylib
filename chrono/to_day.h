@@ -27,87 +27,94 @@
 
 using namespace std::chrono;
 
-class ToDay {
+namespace Time {
 
-	static std::string str;
+	class ToDay {
 
-	static void update() {
-		std::stringstream sstr;
-		sys_seconds to_day_time = time_point_cast<seconds>( system_clock::now());
-		sstr << to_day_time;
-		str = sstr.str();
-	}
+		static std::string str;
 
-public:
+		static void update() {
+			std::stringstream sstr;
+			sys_seconds to_day_time = time_point_cast<seconds>(system_clock::now());
+			sstr << to_day_time;
+			str = sstr.str();
+		}
 
-	static std::string String() {
-		update();
-		return str;
-	}
+	public:
 
-	static auto second() { 
-		update();
-		return std::chrono::seconds(std::stoi( str.substr(str.size()-2))); 
-	}
+		static std::string String() {
+			update();
+			return str;
+		}
 
-	static auto minute() {
-		update();
-		return std::chrono::minutes(std::stoi(str.substr(str.size() - 5, 2)));
-	}
+		static auto second() {
+			update();
+			return std::chrono::seconds(std::stoi(str.substr(str.size() - 2)));
+		}
 
-	static auto hour() { 
-		update();
-		return std::chrono::hours(std::stoi(str.substr(str.size()-8,2)));
-	}
+		static auto minute() {
+			update();
+			return std::chrono::minutes(std::stoi(str.substr(str.size() - 5, 2)));
+		}
 
-	static auto year() {
-		update();
-		return std::chrono::year(std::stoi(str.substr(0, 4)));
-	}
+		static auto hour() {
+			update();
+			return std::chrono::hours(std::stoi(str.substr(str.size() - 8, 2)));
+		}
 
-	static auto month() {
-		update();
-		struct _month {
-			std::chrono::month month;
-			unsigned int index;
-			std::string name;
-		};
+		static auto year() {
+			update();
+			return std::chrono::year(std::stoi(str.substr(0, 4)));
+		}
 
-		std::chrono::month __month = std::chrono::month(std::stoi(str.substr(5, 2)));
+		static auto month() {
+			update();
+			struct _month {
+				std::chrono::month month;
+				unsigned int index;
+				std::string name;
+			};
 
-		return  _month{
-			.month = __month,
-			.index = unsigned int(__month),
-			.name = std::get<1>(Calendar::_MONTHS[unsigned int(__month) - 1])
-		};
+			std::chrono::month __month = std::chrono::month(std::stoi(str.substr(5, 2)));
 
-	}
+			return  _month{
+				.month = __month,
+				.index = unsigned int(__month),
+				.name = std::get<1>(Calendar::_MONTHS[unsigned int(__month) - 1])
+			};
 
-	static auto day() {
-		update();
-		return std::chrono::day(std::stoi(str.substr(8, 2)));
-	}
+		}
 
-	static auto day_name() {
+		static auto day() {
+			update();
+			return std::chrono::day(std::stoi(str.substr(8, 2)));
+		}
 
-		sys_days to_day = time_point_cast<days>(system_clock::now());
-		year_month_weekday ymw = sys_days(to_day);
+		static auto day_name() {
 
-		return ymw.weekday();
-	}
+			sys_days to_day = time_point_cast<days>(system_clock::now());
+			year_month_weekday ymw = sys_days(to_day);
 
-	static auto date() {
-		return sys_days(time_point_cast<days>(system_clock::now()));
-	}
+			return ymw.weekday();
+		}
 
-	static std::string date_hour() {
+		static auto date() {
+			return sys_days(time_point_cast<days>(system_clock::now()));
+		}
 
-	}
-};
+		static std::string date_hour() {
 
-std::string ToDay::str;
+		}
+	};
 
-namespace to_day {
+}
+
+std::string Time::ToDay::str;
+
+
+/************************************ FUNCTION FOR TIME UTILITY *********************************/
+
+namespace Time {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
