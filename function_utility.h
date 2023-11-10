@@ -110,6 +110,9 @@ namespace Function {
 		static const size_t value = 1;
 	};
 
+	template<size_t n>
+	size_t factorial_v = Factorial<n>::value;
+
 	// 3. power of 2 :
 
 	template<int N, typename T>
@@ -170,5 +173,30 @@ namespace Function {
 		return Xunion<To_, From_>{from}.value1;
 	}
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //     CLAMP FUNCTIONS THAT WE NEED  
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+     template<typename T>
+     constexpr T clamp(const T& v, const T& lo, const T& hi)
+     {
+      return v < lo ? lo : hi < v ? hi : v;
+     }
+
+
+  //   template<typename T, T lo_value, T hi_value>
+	 //constexpr T clamp(const T& value) {
+		// return value < lo_value ? lo_value : hi_value < value ? hi_value : value;
+	 //}
+
+	 template<auto lo_value, auto hi_value>
+	 requires std::same_as<decltype(lo_value),decltype(hi_value)>
+	 constexpr auto clamp(decltype(lo_value) value) {
+		 return value < lo_value ? lo_value : hi_value < value ? hi_value : value;
+	 }
 
 }
+
+namespace Fn = Function;
