@@ -67,22 +67,22 @@ namespace ESC {
 #define ITALIC                 "\x1b[3m"
 #define BOLD                   "\x1b[22m"
 #define BLACK_FG               "\x1b[30m"
-#define BLACK_BG               "\x1b[40m"
-#define RED_BG                 "\x1b[41m"
 #define RED_FG                 "\x1b[31m"
 #define GREEN_FG               "\x1b[32m"
-#define GREEN_BG               "\x1b[42m"
 #define YELLOW_FG              "\x1b[33m"
-#define YELLOW_BG              "\x1b[43m"
 #define BLUE_FG                "\x1b[34m"
-#define BLUE_BG                "\x1b[44m"
-#define MAGENTA_FG             "\x1b[35m"
-#define MAGENTA_BG             "\x1b[45m"
-#define CYAN_FG                "\x1b[36m"
-#define CYAN_BG                "\x1b[46m"
-#define WHITE_FG               "\x1b[37m"
-#define WHITE_BG               "\x1b[47m"
 #define DEFAULT_FG             "\x1b[39"
+#define CYAN_FG                "\x1b[36m"
+#define MAGENTA_FG             "\x1b[35m"
+#define WHITE_FG               "\x1b[37m"
+#define BLACK_BG               "\x1b[40m"
+#define RED_BG                 "\x1b[41m"
+#define YELLOW_BG              "\x1b[43m"
+#define GREEN_BG               "\x1b[42m"
+#define BLUE_BG                "\x1b[44m"
+#define MAGENTA_BG             "\x1b[45m"
+#define CYAN_BG                "\x1b[46m"
+#define WHITE_BG               "\x1b[47m"
 #define DEFAULT_BG             "\x1b[49"
 
 #define _FG "\x1b[38;2;"
@@ -103,6 +103,8 @@ namespace ESC {
 #define CELL(SIZE,LeftOrRight,STR)   std::setw(SIZE)<< std::LeftOrRight << STR 
 #define SPACE(N)                     std::string(N,' ').c_str()
 #define REPEAT(N,WCHAR)              std::wstring(N,WCHAR)
+#define REPEAT(N,CHAR)               std::string(N,CHAR)
+#define _COLOR_FG256(i)              (("\x1b[38;5;" + std::to_string(i) + "m").c_str())
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -230,7 +232,6 @@ namespace ESC {
 		return str;
 	}
 
-#define _COLOR_FG256(i)    (("\x1b[38;5;" + std::to_string(i) + "m").c_str())
 
 	constexpr std::string COLORBG256(uchar i) {
 
