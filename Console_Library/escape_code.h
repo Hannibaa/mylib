@@ -26,6 +26,8 @@
 using uint = unsigned int;
 using uchar = unsigned char;
 
+#define _STRING(str)  std::string str{#str}  // define string with his name of variable 
+
 namespace ESC {
 
 #define end_      '\n'
