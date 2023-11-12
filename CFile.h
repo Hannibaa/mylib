@@ -9,7 +9,7 @@
  *                                                                           *
  *                                                                           *
  * Copyright notice:                                                         *
- * Free use of the                                                           *
+ * Free use of the Library CFile                                             *
  * is permitted under the guidelines and in accordance with the most current *
  * version of the MIT License.                                               *
  * http://www.opensource.org/licenses/MIT                                    *
@@ -24,6 +24,11 @@
 
 #define NOT_IMPL    std::cout << "not implemented yet\n"
 
+namespace fs = std::filesystem;
+
+using vecString = std::vector<std::string>;
+using vecPath   = std::vector<fs::path>;
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 //                  FILE CLASS LIBRARY AND FUNCTIONAL LIBRARY THAT SUPORT LOADING FILE 
@@ -31,9 +36,14 @@
 //                  
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace fs = std::filesystem;
 
 namespace File {
+
+	template<typename T>
+	void save_to_file(const std::vector<T>&, const fs::path& );
+
+	template<typename Iter>
+	void save_to_file(Iter Itbegin, Iter Itend, const fs::path& file_name);
 
 	class CFile {
 
@@ -181,6 +191,7 @@ namespace File {
 			key_ = key;
 		}
 
+		//////////////////////////////// save file functions /////////////////////////////////////////
 		void save() {
 			//check the file name is not empty;
 			
@@ -212,7 +223,7 @@ namespace File {
 		}
 
 		// save a region of files to new created file
-		void save_region(const fs::path& file_name, size_t _size, size_t _position) const {
+		void save_region(const fs::path& file_name, size_t _position, size_t _size) const {
 
 			// check size and _position
 			if (_position + _size > data_.size()) {
@@ -220,22 +231,15 @@ namespace File {
 				return;
 			}
 
-			std::vector<CharType> _data_(data_.begin() + _position, data_.begin() +
-				                                                         _position + _size );
-			std::ofstream ofs{ file_name, std::ios::binary };
+			// save data to file.
+			save_to_file(data_.begin()+_position, data_.begin()+_position+_size, file_name);
 
-			if (!ofs) {
-				std::cout << "Failed! to opening file or creating file\n";
-				return;
-			}
-
-			ofs.write(reinterpret_cast<const char*>(_data_.data()), _data_.size() * sizeof(CharType));
-
-			ofs.close();
 		}
 
+
+		///////////////////////// extract data out of class function //////////////////////////////////
 		template<typename NType>
-		std::vector<NType> getdataAs() {
+		std::vector<NType>    getDataAs() {
 			static_assert(std::is_trivially_copyable_v<NType>, "NType should be copyable(POD) data type");
 
 			size_t residual_byte = file_size_ % sizeof(NType);
@@ -258,7 +262,7 @@ namespace File {
 		}
 		
 		template<>
-		std::vector<CharType> getdataAs<CharType>() {
+		std::vector<CharType> getDataAs<CharType>() {
 			return data_;
 		}
 
@@ -274,6 +278,8 @@ namespace File {
 			return vec_;
 		}
 
+
+		////////  String() function /////////////////////////////////////////////////////////////////
 		template<typename CharT = CharType>
 		std::basic_string<CharT> String() {    // extract file in one as string.
 
@@ -300,29 +306,11 @@ namespace File {
 
 			return text_data_;
 		}
-
-		
-		void String(std::string& text) {
+	
+		void                     String(std::string& text) {
 			text.clear();
 			text.reserve(file_size_ + 1);
 			for (auto& element : data_) text.push_back(static_cast<char>(element));
-		}
-
-		void Splite_In(const fs::path& directory , size_t Size, const std::string& identity) const
-		{
-			// should be check directory existence and size file out not more than file_max!!
-
-			size_t n_files = file_size_ / Size;
-			size_t rest_size = file_size_ - n_files * Size;
-			
-			std::string file_name_ = directory.string() + "\\" + identity + "_";
-
-			for (int k = 0; k != n_files; ++k) {
-
-				std::string file_ = file_name_ + std::to_string(k);
-
-				save_region(file_, Size, k * Size);
-			}
 		}
 
 	private:
@@ -399,12 +387,20 @@ namespace File {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
-//             FILE FUNCTION 
+//             FILE OPERATION FUNCTIONS 
 // 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 namespace File {
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    FUNCTION SAVE TO FILE save_to_file(), IT CREATE NEW FILE AND 
+	//    IF FILE EXIST THEY DO NOTHING 
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 	template<typename T>
 	void save_to_file(const std::vector<T>& data, const fs::path& file_name) {
@@ -426,4 +422,107 @@ namespace File {
 		ofs.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(T));
 	}
 
+	template<typename Iter>
+	void save_to_file(Iter Itbegin, Iter Itend, const fs::path& file_name) {
+
+		std::vector<typename Iter::value_type> temp_vec(Itbegin, Itend);
+
+		save_to_file(temp_vec, file_name);
+
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    FUNCTION OF PRINTING ALL PROPERIERTY OF FILE
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool file_propierty(const fs::path& file_name) {
+
+		// check if file exist :
+		if (fs::exists(file_name)) print_ << "file exist in drive. " << end_;
+		else return false;
+
+		// full path of file
+		print_ << "file                : " << file_name.string() << end_;
+
+		// size of file 
+		print_ << "file size           : " << fs::file_size(file_name) << end_;
+
+		// path of file 
+		print_ << "file path directory : " << file_name.parent_path().string() << end_;
+
+		// only file name :
+		print_ << "file name           : " << file_name.filename().string() << end_;
+
+		// only extension of file : 
+		print_ << "file extension      : " << file_name.extension().string() << end_;
+
+		return true;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    CONCATE A FILES
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void concate_files(vecPath& vec_paths, fs::path& file_name) {
+
+	}
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//               GENERATE RANDOM FILE OF SIZE FILE_SIZE 
+	//               1. RANDOM TXT FILE
+	//               2. RANDOM BIN FILE
+	//
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void makeRandomFile(const fs::path& filename, size_t filesize) {
+
+		if (filesize > 10'000'000ull) {
+			std::cout << "Over capacity of disk \n";
+			return;
+		}
+
+		std::ofstream ofs{ filename, std::ios::binary };
+
+		RNG::RG<char> rByte;
+
+		for (size_t i = 0; i < filesize; ++i) {
+
+			ofs.put(rByte());
+
+		}
+
+		ofs.close();
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//          MAKE RANDOM TEXT FILE 
+	//          1. SPECIFIY NUMBER OF WORDS
+	//          2. SPECIFY MAXIMUM LENGTH FO WORDS.
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void makeRandomTextFile(const fs::path& filename, size_t number_words, size_t max_length_word) {
+
+		std::ofstream ofs{ filename };
+
+		RNG::RG<int> rand(0, (int)max_length_word);
+
+		for (int i = 0; i != number_words; ++i) {
+
+			ofs << Str::getRandomString(rand()) << " ";
+
+			if (i % 7 == 1) ofs << '\n';
+
+		}
+
+		ofs.close();
+	}
 }
