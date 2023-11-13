@@ -145,6 +145,28 @@ namespace Vector_Utility {
 		print_ << "}\n";
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//     ERASE ELEMENTS FROM VECTOR FROM POSITION pos WITH SIZE size
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	std::vector<T> erase_from_to(const std::vector<T>& vec, size_t pos, size_t size) {
+
+		if (size > vec.size()) {
+			Print_(color::Red, "Overflow, check sizing size") << end_;
+			return {};
+		}
+
+		std::vector<T> v(vec.size() - size);
+
+		std::copy(vec.begin(), vec.begin() + pos, v.begin());
+		std::copy(vec.begin() + pos + size, vec.end(), v.begin() + pos);
+
+		return v;
+	}
+
 }
 
 #ifndef vu
