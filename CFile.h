@@ -51,11 +51,27 @@ namespace File {
 		using CharType = char;
 
 	public:
-		//CFile() 
-		//	:file_name_{""}
-		//	,file_size_{0}
-		//	,key_{""}
-		//{}
+		CFile() 
+			:file_name_{}
+			, name_file_{}
+			, path_file_{}
+			, ext_file_{}
+			, file_exist_{false}
+			, file_size_{0}
+			, key_{}
+		{}
+		
+		CFile(size_t _size) 
+			:file_name_{}
+			, name_file_{}
+			, path_file_{}
+			, ext_file_{}
+			, file_exist_{false}
+			, file_size_{_size}
+			, key_{}
+		{
+			create_file();
+		}
 
 		CFile(const  fs::path& filename)
 			:file_name_{filename}
@@ -96,6 +112,9 @@ namespace File {
 		CFile(CFile& file, size_t size, size_t position = 0i64)
 			:CFile(file.name(), file.begin() + position, file.begin() + position + size - 1)
 		{}
+
+		~CFile() = default;
+
 
 		// define iterator for CFile is better !!!
 		std::vector<CharType>::iterator begin() noexcept {
@@ -195,7 +214,21 @@ namespace File {
 
 		void add(const std::vector<CharType>& vec_char ,size_t position) {
 			
+			// check position and size not too much
+			if (position > data_.size()) {
+				Print_(color::Red, "check the position, over range.") << end_;
+				return;
+			}
+
+			data_.insert(data_.begin() + position, vec_char.begin(), vec_char.end());
+			file_size_ = data_.size();
 		}
+
+		void add(const std::vector<CharType>& vec_char) {
+			data_.insert(data_.end(), vec_char.begin(), vec_char.end());
+		}
+
+
 
 		void encrypt() {
 			NOT_IMPL;
@@ -261,7 +294,7 @@ namespace File {
 
 
 		///////////////////////// extract data out of class function //////////////////////////////////
-		template<typename NType>
+		template<typename NType = CharType>
 		std::vector<NType>    getDataAs() {
 			static_assert(std::is_trivially_copyable_v<NType>, "NType should be copyable(POD) data type");
 
@@ -302,7 +335,7 @@ namespace File {
 		}
 
 
-		////////  String() function /////////////////////////////////////////////////////////////////
+		////////////////////////////////////  String() function ////////////////////////////////////
 		template<typename CharT = CharType>
 		std::basic_string<CharT> String() {    // extract file in one as string.
 
@@ -400,13 +433,15 @@ namespace File {
 		}
 
 		void create_file() {
-
-			data_.resize(file_size_ + 1);
-
+			data_.reserve(file_size_ + 10);
+			data_.resize(file_size_);
 		}
+
 	};
 
 } 
+
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
@@ -543,10 +578,16 @@ namespace File {
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void concate_files(const vecPath& vec_paths,const fs::path& distination) {
+	void concate_files(const vecPath& vec_paths,const fs::path& destination) {
 		 
+		CFile dest(destination);
 
+		for (auto& p : vec_paths) {
+			CFile file(p);
+			dest.add(file.getDataAs());
+		}
 
+		dest.save();
 	}
 
 
@@ -592,11 +633,20 @@ namespace File {
 
 		RNG::RG<int> rand(0, (int)max_length_word);
 
+		size_t count{};
+
 		for (int i = 0; i != number_words; ++i) {
 
-			ofs << Str::getRandomString(rand()) << " ";
+			auto word = Str::getRandomString(rand());
 
-			if (i % 7 == 1) ofs << '\n';
+			count += word.length();
+
+			ofs << word << " ";
+
+			if (count > 160) {
+				ofs << '\n';
+				count = 0;
+			}
 
 		}
 
