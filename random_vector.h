@@ -214,6 +214,23 @@ namespace Vector_Utility {
 
 		return container;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    MAKE CONTAINER BY USING GENERATOR(), MAY RANDOM OR NOT.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	template<typename Container, typename T, typename Generator>
+		requires requires(Container c, T t) { c.push_back(t); }
+	Container make_container(size_t numbers, T min, T max, Generator generator) {
+		Container container{};
+		for (size_t t = 0; t != numbers; ++t) {
+			container.push_back(generator(min, max));
+		}
+
+		return container;
+	}
+
 }
 
 namespace vu = Vector_Utility;
