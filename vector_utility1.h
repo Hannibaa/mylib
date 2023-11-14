@@ -2,6 +2,8 @@
 #include <vector>
 #include <algorithm>
 #include <MyLib/Console_Library/escape_code.h>
+#include <MyLib/random_generator.h>
+#include <MyLib/random_vector.h>
 
 template<typename T>
 using Pair = std::pair<T, T>;
@@ -50,7 +52,7 @@ namespace Vector_Utility {
 	}
 	 
 	template<typename T, template<typename> class Point >
-	T maxPoints(const std::vector<Point<T>>& vPoint, const int& compound_index)
+	T maxPoints(const std::vector<Point<T>>& vPoint, const int compound_index)
 	{
 		//	static_assert(compound_index == 0 || compound_index == 1, "Only 0 or 1 accecpted ");
 		auto comp = [&](const Point<T>& v1, const Point<T>& v2) {
@@ -87,6 +89,31 @@ namespace Vector_Utility {
 
 		return rect;
 	}
+
+	using pfloat = Pair<float>;
+
+	auto make_random_vec(size_t num, float min1, float max1, float min2, float max2) {
+		return vu::make_container<std::vector<pfloat>>(num,
+			pfloat{ min1,min2 }, pfloat{ max1,max2 },
+			[](pfloat min, pfloat max) { RNG::fRG<float> frand;
+		return pfloat(frand(min.first, max.first), frand(min.second, max.second)); });
+	}
+
+
+	std::array<float, 4> getRect(const std::vector<pfloat>& vpfloat) {
+
+		auto max1 = std::max_element(vpfloat.begin(), vpfloat.end(),
+			[](const pfloat& pf1, const pfloat& pf2) { return pf1.first <= pf2.first; })->first;
+		auto max2 = std::max_element(vpfloat.begin(), vpfloat.end(),
+			[](const pfloat& pf1, const pfloat& pf2) { return pf1.second <= pf2.second; })->second;
+		auto min1 = std::min_element(vpfloat.begin(), vpfloat.end(),
+			[](const pfloat& pf1, const pfloat& pf2) { return pf1.first <= pf2.first; })->first;
+		auto min2 = std::min_element(vpfloat.begin(), vpfloat.end(),
+			[](const pfloat& pf1, const pfloat& pf2) { return pf1.second <= pf2.second; })->second;
+
+		return std::array<float, 4>{min1, min2, max1, max2};
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
