@@ -94,9 +94,11 @@ namespace my_concept {
 		{(... + args)} noexcept -> std::same_as<first_arg_t<Args...>>;
 	};
 
-#define MAC(T,F)   T##::#F 
 
-#define REQUERES(T,F) requires(T t,T::F f){ t.f();}
+#define REQUERES(_Class, _Type ,_Function)  requires(_Class C,_Type value){ C._Function(value);}
+
+#define MAKE_HAS_FUNCTION(_Class, _Type, _Function) template<typename _Class, typename _Type> \
+          concept  Has_##_Function = REQUERES(_Class, _Type, _Function)                       \
 
 
 	template< typename Container, typename T>
@@ -116,3 +118,5 @@ namespace my_concept {
 	};
 
 }
+
+namespace Concept = my_concept;
