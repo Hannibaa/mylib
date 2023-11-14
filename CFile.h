@@ -27,6 +27,9 @@
 
 namespace fs = std::filesystem;
 
+using byte = unsigned char;
+using uchar = unsigned char;
+
 using vecString = std::vector<std::string>;
 using vecPath   = std::vector<fs::path>;
 
@@ -670,6 +673,55 @@ namespace File {
 		}
 
 		return vec_paths;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+	//
+	//                   LOAD FILE IN ARRAY OF TYPE 'T' OF SIZE 'N' AS MAXIMUM, RESIDUAL BYTE 
+	//
+	///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	std::pair<std::vector<T>, std::vector<byte>>
+		LoadToMemory(const fs::path& filename) {
+
+		static_assert(std::is_trivially_copyable_v<T>, "should be pod type");
+
+		size_t sz_file = fs::file_size(filename);
+
+		if (sz_file == -1) {
+			std::cout << "Error in file " << filename << "\n";
+			return {};
+		}
+
+		size_t sz_T = sizeof(T);
+
+		size_t sz_Array = sz_file / sz_T; // should be sz_T > sz_file
+
+		size_t sz_rest = sz_file - sz_Array * sz_T;
+
+
+		std::ifstream ifs{ filename };
+
+		T* buffer = new T[sz_Array];
+
+		ifs.read(reinterpret_cast<char*>(buffer), sz_Array * sz_T * sizeof(char));
+		std::vector<T> vec(buffer, buffer + sz_Array);
+		std::vector<byte> vec_rest;
+
+		if (sz_rest != 0) {
+		    byte* buf_char = new byte[sz_rest];
+			ifs.read(reinterpret_cast<char*>(buf_char), sz_rest * sizeof(char));
+		    vec_rest.insert(vec_rest.end(),buf_char, buf_char + sz_rest);
+		    delete[] buf_char;
+		}
+
+
+		ifs.close();
+
+		delete[] buffer;
+
+		return std::make_pair(vec, vec_rest);
 	}
 
 }
