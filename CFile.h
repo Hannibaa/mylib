@@ -21,6 +21,7 @@
 #pragma once
 #include <filesystem>
 #include <MyLib/operation_files.h>
+#include <MyLib/chrono/to_day.h>
 
 #define NOT_IMPL    std::cout << "not implemented yet\n"
 
@@ -135,11 +136,11 @@ namespace File {
 			return data_.empty();
 		}
 
-		size_t size() const {
+		constexpr size_t size() const {
 			return data_.size();
 		}
 
-		CharType read(size_t position) {
+		CharType read(size_t position) const {
 			return data_[position];
 		}
 
@@ -153,25 +154,47 @@ namespace File {
 				data_[position] = _byte;
 		}
 
-		std::vector<unsigned char> readRegion(size_t position, size_t size) {
-			NOT_IMPL;
-			return {};
+		std::vector<CharType> readRegion(size_t position, size_t size) const {
+			
+			if (position + size > data_.size()) {
+				Print_(color::Red, "check parameter position and size out off range") << end_;
+				return{};
+			}
+
+			std::vector<CharType> vec_region{};
+
+			std::copy(data_.begin() + position, data_.begin() + position + size, vec_region.begin());
+
+			return vec_region;
 		}
 
 		void writeRegion(const std::vector<CharType>& vec_char, size_t position) {
-			NOT_IMPL;
-		}
+			
+			size_t buffer_size = vec_char.size();
+			// check overflow :
+			if ( buffer_size + position > data_.size() ) {
+				Print_(color::Red, "Overflow in data, will treated") << end_;
+				buffer_size = data_.size() - position;
+			}
 
-		void writeRegion(size_t position, size_t size, char* buffer) { // unsafe function.
-			NOT_IMPL;
+			std::copy(vec_char.begin(), vec_char.begin() + buffer_size, data_.begin() + position);
+
 		}
 
 		void remove(size_t position, size_t size) {
-			NOT_IMPL;
+			
+			if (position + size > data_.size()) {
+				Print_(color::Red, "posibly overflow check position and size") << end_;
+				return;
+			}
+			
+			data_.erase(data_.begin() + position, data_.begin() + position + size);
+
+			file_size_ = data_.size();
 		}
 
-		void add(size_t position, char* buffer) {
-			NOT_IMPL;
+		void add(const std::vector<CharType>& vec_char ,size_t position) {
+			
 		}
 
 		void encrypt() {
@@ -464,11 +487,65 @@ namespace File {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
+	//    SPLITE FILE TO FILES -- NEED TO CHECK FILE AND DIRECTORY GAVE BY DEFAULT --
+	//                         -- RETURN IS VECTOR TO PATHS OF FILES --
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	const size_t MAX_FILES_GEN = 20 ;  // maximum files that allowed to generate.
+
+	vecPath splite_file(const fs::path& file_name, size_t Size, fs::path folder = std::string{}) {
+
+		File::CFile file{ file_name };
+
+		vecPath vec_files{};
+
+		// will create folder at file position if there are no one:
+		if (folder.empty()) {
+			folder = file_name.parent_path().string() + "\\" + file_name.filename().string() + "_"
+				+ Time::get_serial_at_time();
+			fs::create_directory(folder);
+		}
+		print_ << "directory is : " << folder.string() << end_;
+		// calculate number of file will be generated 
+		// and rest file :
+		size_t n_files = file.size() / Size;
+		size_t rest_file = file.size() - n_files * Size;
+
+		// make exception if number of file is too much : 
+		if (n_files > MAX_FILES_GEN) {
+			Print_(color::Red, "too much much file output ...") << end_;
+			return {};
+		}
+		// create a files in folder.
+
+		std::string file_ = folder.string() + "\\"
+			+ "_";
+
+		for (size_t t = 0; t < n_files; ++t) {
+			print_ << "file n : " << file_ << " " << t << end_;
+			file.save_region(file_ + "_" + std::to_string(t), t * Size, Size);
+			vec_files.emplace_back(file_ + "_" + std::to_string(t));
+		}
+
+		if (rest_file != 0) {
+			print_ << "file n : " << file_ << " " << n_files << end_;
+			file.save_region(file_ + "_" + std::to_string(n_files), n_files * Size, rest_file);
+			vec_files.emplace_back(file_ + "_" + std::to_string(n_files));
+		}
+
+		return vec_files;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
 	//    CONCATE A FILES
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void concate_files(vecPath& vec_paths, fs::path& file_name) {
+	void concate_files(const vecPath& vec_paths,const fs::path& distination) {
+		 
+
 
 	}
 
@@ -525,4 +602,24 @@ namespace File {
 
 		ofs.close();
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//        GET ONLY ALL FILES IN DIRECTORY WITHOUT GO TO SUB DIRECTORY FILES.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	vecPath get_files_directory(const fs::path& folder_name) {
+
+		vecPath vec_paths{};
+
+		for (auto& p : fs::directory_iterator(folder_name)) {
+			if (fs::is_regular_file(p.path())) {
+				vec_paths.emplace_back(p.path());
+			}
+		}
+
+		return vec_paths;
+	}
+
 }
