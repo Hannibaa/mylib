@@ -309,3 +309,7 @@ void restor_mode() {
 void move_to(uint x, uint y){
 	print_ << MOVETO(x, y);
 }
+
+void cls() {
+	print_ << ERASESCREEN << MOVEHOME;
+}
