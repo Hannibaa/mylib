@@ -533,22 +533,44 @@ namespace Str{
 		return str;
 	}
 
-	std::string getRandomString(const char* fmt) {   // '-_@'
-
+	std::string getRandomString(int size, const char* format) { // '-_@'
+		
 		RNG::RG<char> rchar('a', 'z');
 		RNG::RG<char> Rchar('A', 'Z');
 		RNG::RG<char> rNumb('0', '9');
 		RNG::RG<int> r(0, 2);
 
-		char c{};
+		std::string str;
+		int count{};
+
+		while (*format != 0 && count < size ) {  
+			if (*format == '-') str.push_back(Rchar());
+			if (*format == '_') str.push_back(rchar());
+			if (*format == '@') str.push_back(rNumb());
+			if (*format != '-' && *format != '_' && *format != '@') str.push_back(*format);
+			format++;
+			++count;
+		}
+
+		for (; count < size; ++count) str.push_back(rchar());
+
+		return str;
+	}
+
+	std::string getRandomString(const char* format) {   // '-_@'
+
+		RNG::RG<char> rchar('a', 'z');
+		RNG::RG<char> Rchar('A', 'Z');
+		RNG::RG<char> rNumb('0', '9');
+
 		std::string str;
 
-		while (*fmt != 0) {
-			if (*fmt == '-') str.push_back(Rchar());
-			if (*fmt == '_') str.push_back(rchar());
-			if (*fmt == '@') str.push_back(rNumb());
-			if (*fmt != '-' && *fmt != '_' && *fmt != '@') str.push_back(*fmt);
-			fmt++;
+		while (*format != 0) {
+			if (*format == '-') str.push_back(Rchar());
+			if (*format == '_') str.push_back(rchar());
+			if (*format == '@') str.push_back(rNumb());
+			if (*format != '-' && *format != '_' && *format != '@') str.push_back(*format);
+			format++;
 		}
 
 		return str;
@@ -574,100 +596,14 @@ namespace Str{
 		return getRandomString(sz());
 	}
 
-	std::string getRandomString2(const char* fmt) {
+	std::string getRandomString2(const char* format) {
 
-		int size = (int)std::strlen(fmt);
+		int size = (int)std::strlen(format);
 
 		RNG::RG<int> sz(0, size - 1);
 
-		return getRandomString(fmt).substr(0, sz());
+		return getRandomString(format).substr(0, sz());
 	}
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	//                    RANDOM STRING GENERATION 
-	//                    fmt = "---____@@@@@@" 
-	//                    - for capital latter
-	//                    _ for miniscul latter
-	//                    @ for numeric letter
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	std::vector<std::string>  getRandomStringVector(int max_string_size, int vector_size, bool variable_size = false)
-	{
-		// not accepted negative value
-		if (max_string_size < 0 || vector_size < 0) {
-			std::cout << "One of argument in random string function is negative\n";
-			return {};
-		}
-
-		// Initializing the random number seeding 
-		RNG::RG<char> rchar('a', 'z');
-		RNG::RG<char> Rchar('A', 'Z');
-		RNG::RG<char> rNumb('0', '9');
-		RNG::RG<int> rSize(0, max_string_size);
-		RNG::RG<int> r(0, 2);
-
-		std::vector<std::string> vString;
-
-		for (int k = 0; k < vector_size; ++k) {
-
-		        char c{};
-		        std::string str;
-
-				int strSize = !variable_size ? max_string_size : rSize();
-		        
-		        for (int i = 0; i != strSize; ++i) {
-		        	int j = r();
-		        	if (j == 0) str.push_back(rchar());
-		        	if (j == 1) str.push_back(Rchar());
-		        	if (j == 2) str.push_back(rNumb());
-		        }
-
-				vString.push_back(str);
-		}
-
-		return vString;
-	}
-
-
-	std::vector<std::string>  getRandomStringVector( int vector_size, const char* format, bool variable_size = false)
-	{
-		// not accepted negative value
-		if (vector_size < 0 || format == "") {
-			std::cout << "One of argument in random string function is negative\n";
-			return {};
-		}
-
-		// Initializing the random number seeding 
-		RNG::RG<char> rchar('a', 'z');
-		RNG::RG<char> Rchar('A', 'Z');
-		RNG::RG<char> rNumb('0', '9');
-		RNG::RG<int> Sz(0, (int)std::strlen(format)-1);
-		
-		std::vector<std::string> vString;
-
-		for (int k = 0; k < vector_size; ++k) {
-
-			char c{};
-			std::string str;
-			const char* fmt = format;
-
-			while (*fmt != 0) {
-				if (*fmt == '-') str.push_back(Rchar());
-				if (*fmt == '_') str.push_back(rchar());
-				if (*fmt == '@') str.push_back(rNumb());
-				if (*fmt != '-' && *fmt != '_' && *fmt != '@') str.push_back(*fmt);
-				fmt++;
-			}
-
-			if (variable_size) str = str.substr(0,Sz());
-			vString.push_back(str);
-		}
-
-		return vString;
-	}
-
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
