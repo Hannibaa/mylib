@@ -36,3 +36,5 @@
 *.db-shm
 *.db-wal
 *.opendb
+/.vs/MyLib/FileContentIndex
+*.sqlite
