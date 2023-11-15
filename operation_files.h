@@ -61,20 +61,6 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
     auto equal_char = [](char x, char y)->bool {return x == y; };
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //                   CHECK FILE IF EXIST
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    template<typename Tchar>
-    bool isFileExist(const std::basic_string<Tchar>& filename) {
-
-        fs::path file_path{ filename };
-
-        return fs::exists(file_path) ;
-    }
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
     //        Compare Two file side by side
@@ -121,7 +107,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
 
         //create log file named file1file2.log
-        auto logfile = file_path1.stem().string() + file_path2.stem().string() + ".log";
+        auto logfile = file_path1.stem().string() + "_" + file_path2.stem().string() + ".log";
 
         if (filelog != "") {
             logfile.clear();
@@ -183,7 +169,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
     void concatFiles(const fs::path& file_path1, const fs::path& file_path2, size_t size = -1, size_t pos = -1) {
 
-        size_t size2 = std::filesystem::file_size(file_path2);
+        size_t size2 = fs::file_size(file_path2);
 
         std::ofstream ofs1{ file_path1,std::ios::binary | std::ios::app };
 
@@ -539,7 +525,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
 
         static uint32_t records = 0;
 
-        if (!isFileExist(historicfile)) {
+        if (!fs::exists(historicfile)) {
             print_ << "file not existed " << end_;
 
             // make one new; need header historic :{date}
@@ -580,44 +566,7 @@ const char* str_printable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY
         fstr.close();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    //
-    //                   LOAD FILE IN ARRAY OF TYPE 'T' OF SIZE 'N' AS MAXIMUM, RESIDUAL BYTE 
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    template<typename T, typename Tchar = char>
-    std::pair<std::shared_ptr<T[]>, size_t> LoadToMemory(const std::basic_string<Tchar>& filename) {
-
-        //static_assert(std::is_pod<T>::value, "should be pod type");
-
-        size_t sz_file = std::filesystem::file_size(filename);
-
-        if (sz_file == -1) {
-            std::cout << "Error in file " << filename << "\n";
-            return {};
-        }
-
-        size_t sz_T = sizeof(T);
-
-        size_t sz_Array = sz_file / sz_T; // should be sz_T > sz_file
-
-        size_t sz_rest = sz_file - sz_Array * sz_T;
-
-
-        std::basic_ifstream<Tchar> ifs{ filename };
-
-        T* buffer = new T[sz_Array];
-
-        ifs.read(reinterpret_cast<char*>(buffer), sz_Array * sz_T * sizeof(char));
-
-        std::shared_ptr<T[]> Buffer{ buffer };
-
-        ifs.close();
-
-        return std::make_pair(Buffer, sz_Array);
-    }
-
+    
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     //
     //            LOAD FILE IN ARRAY OF TYPE 'T', SIZE , VECTOR OF REST OF FILE
