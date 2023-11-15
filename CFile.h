@@ -100,8 +100,12 @@ namespace File {
 			, ext_file_{}
 			,key_{""}
 		{
-			create_file();
-			get_file_data();
+			if (fs::exists(file_name)) {
+			     get_file_data();
+			}
+			else {
+			     create_file();
+			}
 		}
 
 		template<typename Iter>
@@ -116,7 +120,33 @@ namespace File {
 			:CFile(file.name(), file.begin() + position, file.begin() + position + size - 1)
 		{}
 
-		~CFile() = default;
+		~CFile() {
+			Print_(color::Green, "do you like to save file that modified (y/n) : ") ;
+			// we should add new variable bool is_modified = true ;
+			// and we have file name valide call save(); call save_file(../).
+			char yn{};
+			std::cin >> yn;
+			if (yn == 'y' || yn == 'Y') {
+				yn = 0;
+				print_ << "save to file : " << file_name_.string() << end_;
+				print_ << "do you like to change save file (y/n) : ";
+				std::cin >> yn;
+
+				if (yn == 'y' || yn == 'Y') {
+					std::string new_file{};
+					print_ << "enter new file name distination : ";
+					std::cin >> new_file;
+					save_file(new_file);
+				}
+				else {
+					save();
+				}
+			}
+			else {
+				print_ << "file not saved ..." << end_;
+				// if future we added to save it in temperary file.
+			}
+		}
 
 
 		// define iterator for CFile is better !!!
@@ -169,11 +199,14 @@ namespace File {
 		void write(CharType C, size_t position) {
 			if (position < data_.size())
 				data_[position] = C;
+			is_modified_ = true;
 		}
 
 		void setByte(size_t position, CharType _byte) {
-			if (position < file_size_)
+			if (position < file_size_) {
 				data_[position] = _byte;
+				is_modified_ = true;
+			}
 		}
 
 		std::vector<CharType> readRegion(size_t position, size_t size) const {
@@ -200,7 +233,7 @@ namespace File {
 			}
 
 			std::copy(vec_char.begin(), vec_char.begin() + buffer_size, data_.begin() + position);
-
+			is_modified_ = true;
 		}
 
 		void remove(size_t position, size_t size) {
@@ -213,6 +246,7 @@ namespace File {
 			data_.erase(data_.begin() + position, data_.begin() + position + size);
 
 			file_size_ = data_.size();
+			is_modified_ = true;
 		}
 
 		void add(const std::vector<CharType>& vec_char ,size_t position) {
@@ -225,10 +259,12 @@ namespace File {
 
 			data_.insert(data_.begin() + position, vec_char.begin(), vec_char.end());
 			file_size_ = data_.size();
+			is_modified_ = true;
 		}
 
 		void add(const std::vector<CharType>& vec_char) {
 			data_.insert(data_.end(), vec_char.begin(), vec_char.end());
+			is_modified_ = true;
 		}
 
 
@@ -378,7 +414,8 @@ namespace File {
 		std::string           name_file_;
 		std::string           path_file_;
 		std::string           ext_file_ ;
-		bool                  file_exist_;  
+		bool                  file_exist_;
+		bool                  is_modified_{ false };
 
 		std::string           key_;
 		size_t                file_size_;
@@ -399,6 +436,7 @@ namespace File {
 				Print_(color::Green, "File not exist ") << end_;
 				file_size_ = 0;
 				file_exist_ = false;
+				create_file();
 				return;
 			}
 
@@ -438,6 +476,7 @@ namespace File {
 		void create_file() {
 			data_.reserve(file_size_ + 10);
 			data_.resize(file_size_);
+			file_exist_ = false;
 		}
 
 	};
@@ -627,26 +666,36 @@ namespace File {
 	//          MAKE RANDOM TEXT FILE 
 	//          1. SPECIFIY NUMBER OF WORDS
 	//          2. SPECIFY MAXIMUM LENGTH FO WORDS.
+	//          3. SPECIFY GENERATIVE FUNCTION OF STRING.
 	//
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void makeRandomTextFile(const fs::path& filename, size_t number_words, size_t max_length_word) {
+	template<typename...Ts>
+	void makeRandomTextFile(const fs::path& filename, 
+		size_t number_words, size_t max_length_word, size_t max_line,
+		std::string (*gen)(Ts...), Ts...args) {
+
+		if ((number_words + 1) * max_length_word > 10'000'000ull) {
+			Print_(color::Red, "Over Capacity of disk") << end_;
+			return;
+		}
 
 		std::ofstream ofs{ filename };
-
-		RNG::RG<int> rand(0, (int)max_length_word);
 
 		size_t count{};
 
 		for (int i = 0; i != number_words; ++i) {
 
-			auto word = Str::getRandomString(rand());
+			auto word = gen(args...);
+
+			if (word.length() > max_length_word) word = word.substr(0, max_length_word);
 
 			count += word.length();
+			++count;
 
 			ofs << word << " ";
 
-			if (count > 160) {
+			if (count > max_line) {
 				ofs << '\n';
 				count = 0;
 			}
