@@ -38,3 +38,4 @@
 *.opendb
 /.vs/MyLib/FileContentIndex
 *.sqlite
+*.ipch

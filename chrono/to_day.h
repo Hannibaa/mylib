@@ -17,6 +17,7 @@
 #include <string_view>
 #include <MyLib/Calender_utility.h>
 #include <MyLib/random_generator.h>
+#include <MyLib/stringfunctionhelper.h>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
