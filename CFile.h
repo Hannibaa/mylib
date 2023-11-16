@@ -20,7 +20,7 @@
 
 #pragma once
 #include <filesystem>
-#include <MyLib/operation_files.h>
+#include <fstream>
 #include <MyLib/chrono/to_day.h>
 
 #define NOT_IMPL    std::cout << "not implemented yet\n"
@@ -121,30 +121,36 @@ namespace File {
 		{}
 
 		~CFile() {
-			Print_(color::Green, "do you like to save file that modified (y/n) : ") ;
-			// we should add new variable bool is_modified = true ;
-			// and we have file name valide call save(); call save_file(../).
-			char yn{};
-			std::cin >> yn;
-			if (yn == 'y' || yn == 'Y') {
-				yn = 0;
-				print_ << "save to file : " << file_name_.string() << end_;
-				print_ << "do you like to change save file (y/n) : ";
-				std::cin >> yn;
 
+			if (is_modified_) {
+
+				Print_(color::Green, "do you like to save file that modified (y/n) : ");
+				// we should add new variable bool is_modified = true ;
+				// and we have file name valide call save(); call save_file(../).
+				char yn{};
+				std::cin >> yn;
 				if (yn == 'y' || yn == 'Y') {
-					std::string new_file{};
-					print_ << "enter new file name distination : ";
-					std::cin >> new_file;
-					save_file(new_file);
+					yn = 0;
+					print_ << "save to file : " << file_name_.string() << end_;
+					print_ << "do you like to change save file (y/n) : ";
+					std::cin >> yn;
+
+					if (yn == 'y' || yn == 'Y') {
+						std::string new_file{};
+						print_ << "enter new file name distination : ";
+						std::cin >> new_file;
+						save_file(new_file);
+					}
+					else {
+						if (!file_name_.empty()) save();
+						else Print_(color::Red, "no file name exist...\n");
+					}
 				}
 				else {
-					save();
+					print_ << "file not saved ..." << end_;
+					// if future we added to save it in temperary file.
 				}
-			}
-			else {
-				print_ << "file not saved ..." << end_;
-				// if future we added to save it in temperary file.
+
 			}
 		}
 
@@ -164,6 +170,8 @@ namespace File {
 
 		void setName(const std::string_view name_file) {
 			name_file_ = name_file;
+			if (path_file_.empty()) { file_name_ = name_file_; return; }
+			file_name_ = path_file_ + "\\" + name_file_;
 		}
 
 		void setExtension(const std::string_view extension) {
@@ -173,6 +181,7 @@ namespace File {
 		void setPath(const fs::path& path) {
 			if (fs::exists(path))
 			path_file_ = path.string();
+			file_name_ = path.string() + "\\" + name_file_;
 		}
 
 		std::string extension() const {
@@ -267,6 +276,23 @@ namespace File {
 			is_modified_ = true;
 		}
 
+		template<typename T>
+		void add(const std::vector<T>& vec, size_t position) {		
+			static_assert(std::is_trivially_copyable_v<T>, "T is POD type");
+
+			if (position > data_.size()) {
+				Print_(color::Red, "Check argument position, overflow") << end_;
+				return;
+			}
+
+			if ( vec.size() == 0) return;
+
+			CharType* ptr_char = (CharType*)vec.data();
+
+			data_.insert(data_.begin() + position, ptr_char, ptr_char + (vec.size() * sizeof(T)));
+			file_size_ = data_.size();
+			is_modified_ = true;
+		}
 
 
 		void encrypt() {
@@ -290,7 +316,7 @@ namespace File {
 		void save() {
 			//check the file name is not empty;
 			
-			std::ofstream ofs{ file_name_,std::ios::binary };
+			std::ofstream ofs{ file_name_, std::ios::binary};
 
 			if (!ofs.is_open()) {
 				Print_(color::Red, "fail!! to save file") << end_;
@@ -300,6 +326,7 @@ namespace File {
 			ofs.write(reinterpret_cast<const char*>(data_.data()), data_.size() * sizeof(CharType));
 
 			ofs.close();
+			is_modified_ = false;
 		}
 
 		template<typename CharT>
@@ -732,14 +759,14 @@ namespace File {
 
 	template<typename T>
 	std::pair<std::vector<T>, std::vector<byte>>
-		LoadToMemory(const fs::path& filename) {
+		LoadFileToMemory(const fs::path& filename) {
 
 		static_assert(std::is_trivially_copyable_v<T>, "should be pod type");
 
 		size_t sz_file = fs::file_size(filename);
 
 		if (sz_file == -1) {
-			std::cout << "Error in file " << filename << "\n";
+			std::cout << "Error on file " << filename << "\n";
 			return {};
 		}
 
