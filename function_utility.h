@@ -16,7 +16,6 @@
 
 
 
-
 namespace Function {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,7 +59,7 @@ namespace Function {
 	{
 		enum { size = sizeof(T) };
 
-		constexpr std::size_t operator () (void) noexcept { return sizeof(T); }
+		constexpr size_t operator () (void) noexcept { return sizeof(T); }
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,10 +77,38 @@ namespace Function {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
-	//      Algebraic Functions
+	//      Algebraic Functions About Maximum-Minimum  built-in type.
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+	template<typename T>
+	constexpr T max_of = T{};
+
+	template<typename T>
+	constexpr T min_of = T{};
+
+	template<> constexpr  int max_of<int> = INT_MAX;
+	template<> constexpr  int min_of<int> = INT_MIN ;
+	template<> constexpr  int max_of<short> = SHRT_MAX;
+	template<> constexpr  int min_of<short> = SHRT_MIN;
+	template<> constexpr  int max_of<char> = CHAR_MAX;
+	template<> constexpr  int min_of<char> = CHAR_MIN;
+	template<> constexpr  long int      min_of<long int> =	LONG_MIN	;
+	template<> constexpr  long int      max_of<long int> =	LONG_MAX	;
+	template<> constexpr  long long     max_of<long long> =	LLONG_MAX	;
+	template<> constexpr  long long     min_of<long long> =	LLONG_MIN	;
+	template<> constexpr  int max_of<unsigned short> = USHRT_MAX;
+	template<> constexpr  int max_of<unsigned char> = UCHAR_MAX;
+	template<> constexpr  unsigned int  max_of<unsigned int > =	UINT_MAX	;
+	template<> constexpr  unsigned long max_of<unsigned long> =	ULONG_MAX	;
+	template<> constexpr  unsigned long long max_of<unsigned long long> =	ULLONG_MAX  ;
+
+	template<typename T>
+	constexpr T max_v() { if (max_of<T> == T{}) std::cout << "not built-in type\n"; return max_of<T>; }
+
+	template<typename T>
+	constexpr T min_v() { if (min_of<T> == T{}) std::cout << "not built-in type\n"; return min_of<T>; }
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -118,6 +145,20 @@ namespace Function {
 	template<int N, typename T>
 	constexpr T _power2 = static_cast<T>(1ull << 1);
 
+	// 4. factorial function 
+	
+	template<typename T>
+	constexpr T Fact_Func(T f(T), T N) {  // WE ALWAYS USE F = 0;
+		static_assert(std::is_integral_v<T>, "T should be integral type");
+		T M = 1;
+		for (T i = 0; i < N; i++)
+		{
+			M = f(i + 1) * M;
+		}
+		return M;
+	}
+
+	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
 	//    Floating Point : 1. Increment and decrement 
@@ -185,17 +226,24 @@ namespace Function {
       return v < lo ? lo : hi < v ? hi : v;
      }
 
-
-  //   template<typename T, T lo_value, T hi_value>
-	 //constexpr T clamp(const T& value) {
-		// return value < lo_value ? lo_value : hi_value < value ? hi_value : value;
-	 //}
-
 	 template<auto lo_value, auto hi_value>
-	 requires std::same_as<decltype(lo_value),decltype(hi_value)>
+	 requires std::same_as<decltype(lo_value),decltype(hi_value)> && 
+	          std::is_arithmetic_v<decltype(lo_value)>  
 	 constexpr auto clamp(decltype(lo_value) value) {
 		 return value < lo_value ? lo_value : hi_value < value ? hi_value : value;
 	 }
+     
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//      Union ???
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	template<typename T1, typename T2>
+	union ptr_2type {
+	  T1* ptr1;
+	  T2* ptr2;
+	};
 
 }
 
