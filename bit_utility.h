@@ -1,4 +1,9 @@
 #pragma once
+/*             Authur : KADDA Aoues 
+               Library : Bit utility 
+               Date    : ?? / ?? / 2023                         
+                
+                */
 
 #include <utility>
 #include <vector>
