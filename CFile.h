@@ -168,20 +168,13 @@ namespace File {
 			return file_name_;
 		}
 
-		void setName(const std::string_view name_file) {
-			name_file_ = name_file;
-			if (path_file_.empty()) { file_name_ = name_file_; return; }
-			file_name_ = path_file_ + "\\" + name_file_;
+		void setName(const std::string& name_file) {
+			if (file_name_.empty()) file_name_ = name_file;
+			else Error_("Use member function rename(fs::path)");
 		}
 
 		void setExtension(const std::string_view extension) {
 			ext_file_ = extension;
-		}
-
-		void setPath(const fs::path& path) {
-			if (fs::exists(path))
-			path_file_ = path.string();
-			file_name_ = path.string() + "\\" + name_file_;
 		}
 
 		std::string extension() const {
