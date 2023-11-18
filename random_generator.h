@@ -32,7 +32,7 @@ namespace RNG {
 		using T = typename std::conditional<std::is_integral_v<Type>, Type, int>::type;
 		using F = typename std::conditional<std::is_floating_point_v<Type>, Type, float>::type;
 
-		std::random_device rdevice;
+		static std::random_device rdevice;
 		std::mt19937 engine;
 		std::uniform_int_distribution<T> uiRand;
 		std::uniform_real_distribution<F> ufRand;
@@ -71,6 +71,8 @@ namespace RNG {
 
 	};
 
+	template<typename T>
+	std::random_device  RG<T>::rdevice;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
