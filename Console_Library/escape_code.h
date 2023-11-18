@@ -30,6 +30,8 @@ using uchar = unsigned char;
 #define _CSTR(x)      std::to_string(x).c_str()   // usefull macro 
 #define _CwSTR(x)     std::to_wstring(x).c_str()  // usefull macro 
 
+#define _s(str)       #str
+#define _ws(wstr)     L#wstr
 
 namespace ESC {
 
