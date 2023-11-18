@@ -642,7 +642,8 @@ namespace Str{
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
     //    1. Put text in vector of string
-	//    2. Put text in vector of words    
+	//    2. Put text in vector of words   
+	//    3. Put text in vector of lines(length). 
     // 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -709,6 +710,20 @@ namespace Str{
 		return vec_words;
 	}
 
+	template<typename Char>
+	std::vector<std::basic_string<Char>> put_text_in_box(const std::basic_string<Char>& text, size_t length)
+	{
+		std::vector<std::basic_string<Char>> vstr;
+		int l = text.length() / length + 1;
+		for (int n = 0; n < l; ++n) {
+			vstr.push_back(text.substr(n * length, length));
+			if (vstr.at(vstr.size() - 1).length() < length) break;
+		}
+
+		return vstr;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
 	//    FUNCTION GET ALPHABETIC WORDS AND PUT THEM IN VECTOR OF STRINGS.
@@ -755,16 +770,30 @@ namespace Str{
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
-	//   Resive a vector of string.
+	//   Resise a vector of string.
+	//   
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void resizeVecString(std::vector<std::string>& vString, int new_size) {
+	template<typename STRING>
+	void resizeVecString(std::vector<STRING>& vString, size_t new_size) {
 
 		for (auto& str : vString) str.resize(new_size);
 
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    replacing some char with another character.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename Char>
+	void replace_inplace(std::basic_string<Char>& text, Char c, Char by_c) {
+		for (int i = 0; i != text.size(); ++i) {
+			if (text[i] == c) text[i] = by_c;
+		}
+	}
 
 
 
