@@ -39,3 +39,7 @@
 /.vs/MyLib/FileContentIndex
 *.sqlite
 *.ipch
+/Console_Library/text_support.h
+/Console_Library/text_support.cpp
+/Console_Library/rogueutil.h
+/Console_Library/CppConsoleTable.hpp
