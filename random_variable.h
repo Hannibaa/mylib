@@ -1,5 +1,5 @@
 #pragma once
-#include "C:\Users\Acer\source\MyLib\random_generator.h"
+#include "MyLib\random_generator.h"
 #include <chrono>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -129,8 +129,15 @@ namespace RV {
 			, m_min{min}
 		{}
 
+		SRV() : SRV(T{}, T{}, T{}) {};
+		SRV(const SRV&) = default;
+
 		void setStep(T step) {
 			m_step = step;
+		}
+
+		void start_value(T value) {
+			x = std::clamp(value, m_initial, m_target);
 		}
 
 		operator T() {
@@ -261,12 +268,12 @@ namespace RV {
 			x = m_random();
 		}
 
-		void setDuration(std::chrono::milliseconds _duration) {
+		void setDuration(std::chrono::milliseconds  _duration) {
 			m_duration_ms = _duration;
 		}
 
-		T max() const { return m_max; }
-		T min() const { return m_min; }
+		constexpr T max_() const { return m_max; }
+		constexpr T min_() const { return m_min; }
 
 		operator T() {
 
@@ -275,7 +282,7 @@ namespace RV {
 				return x;
 			}
 			else {
-				x  = m_random();
+				x = m_random();
 				tp = std::chrono::steady_clock::now();
 			}
 
