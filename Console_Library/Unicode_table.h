@@ -2,7 +2,12 @@
 #include <fcntl.h>
 #include <io.h>
 
-#define SETMODE_UNICODE        	_setmode(_fileno(stdout), _O_U16TEXT)
+// _O_WTEXT
+
+#define SETMODE_UNICODE        	  _setmode(_fileno(stdout), _O_U16TEXT)
+#define SETMODE_WTTEXT            _setmode(_fileno(stdout), _O_WTEXT)
+#define SETMODE_TEXT              _setmode(_fileno(stdout), _O_TEXT)
+
 
 
 namespace Unicode {
@@ -20,26 +25,16 @@ namespace Unicode {
 			L'\x2508',L'\x2509',L'\x250A',L'\x250B',L'\x250C',L'\x250D',L'\x250E',L'\x250F',
 
 			L'\x2510',L'\x2511',L'\x2512',L'\x2513',L'\x2514',L'\x2515',L'\x2516',L'\x2517',
-			L'\x2518',L'\x259',L'\x251A',L'\x251B',L'\x251C',L'\x251D',L'\x251E',L'\x251F',
+			L'\x2518',L'\x2590',L'\x251A',L'\x251B',L'\x251C',L'\x251D',L'\x251E',L'\x251F',
+		};
+	}
 
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-			//L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',L'\x25',
-
+	inline namespace Solid {
+		const wchar_t solid[] = {L'\x2580',	 L'\x2584',	 L'\x2584',
+								 L'\x2588',	 L'\x258c',	 L'\x2590',
+								 L'\x2591',	 L'\x2592',	 L'\x2593',
+								 L'\x25a0',  L'\x25aa',  L'\x25ac',
+								 L'\x25d8',  L'\x25d9',  L'\x25ac'
 		};
 	}
 }
