@@ -392,7 +392,9 @@ namespace ESC {
 		}
 	};
 
-
+#define INIT_CURSOR      Init_Cursor    init_cursor
+#define WINIT_CURSOR     wInit_Cursor   init_cursor
+#define INIT_WCHAR_TEXT  Wchar_Mode     init_wchart_text
 }
 
 
