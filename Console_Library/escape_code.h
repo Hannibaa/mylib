@@ -14,6 +14,8 @@
 #include <string>
 #include <iomanip>
 #include <MyLib\Console_Library\Unicode_table.h>
+#include "MyLib/function_utility.h"
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
@@ -31,7 +33,7 @@ using uchar = unsigned char;
 #define _CwSTR(x)     std::to_wstring(x).c_str()  // usefull macro 
 
 #define _s(str)       #str
-#define _ws(wstr)     L#wstr
+#define _w(wstr)     L#wstr
 
 namespace ESC {
 
@@ -329,11 +331,11 @@ namespace ESC {
 
 	}
 
-#define Print_(color256, text)   print_ << _COLOR_FG256(color256) << text << RESETMODE 
-#define WPrint_(color256, text)  wprint_ << _wCOLOR_FG256(color256) << text << RESETMODE 
-#define COLOR(color256, text)    _COLOR_FG256(color256) << text << RESETMODE  
-#define wCOLOR(color256, text)   _wCOLOR_FG256(color256) << text << RESETMODE  
-#define Error_(text)             Print_(color::Red, text) << end_;
+#define Print_(color256, text)    print_ << _COLOR_FG256(color256) << text << RESETMODE 
+#define WPrint_(color256, text)   wprint_ << _wCOLOR_FG256(color256) << text << RESETMODE 
+#define COLOR(color256, text)     _COLOR_FG256(color256) << text << RESETMODE  
+#define wCOLOR(color256, text)    _wCOLOR_FG256(color256) << text << RESETMODE  
+#define Error_(text)              Print_(color::Red, text) << end_;
 #define wError_(text)             WPrint_(color::Red, text) << wend_;
 
 
@@ -343,14 +345,16 @@ namespace ESC {
 		}
 		~Init_Cursor() {
 			print_ << CURSOR_VISIBLE;
+			print_ << "cursor visible\n";
 		}
 	};
 	struct wInit_Cursor {
 		wInit_Cursor() {
-			print_ << CURSOR_INVISIBLE;
+			wprint_ << CURSOR_INVISIBLE;
 		}
 		~wInit_Cursor() {
-			print_ << CURSOR_VISIBLE;
+			wprint_ << CURSOR_VISIBLE;
+			wprint_ << L"cursor visible\n";
 		}
 	};
 	struct Init_Esc {
@@ -384,16 +388,11 @@ namespace ESC {
 
 		~Wchar_Mode() {
 			SETMODE_TEXT;
+			print_ << "text mode\n";
 		}
 	};
 
-	Init_Cursor  init_cursor{};
-	wInit_Cursor winit_cursor{};
-	Init_Esc     init_textmode{};
-	Wchar_Mode   init_wchar{};
 
-
-	//Init_Esc Init;
 }
 
 
@@ -446,6 +445,23 @@ namespace ESC {
 			std::wcin.clear();
 		}
 	}
+
+	template<typename Char>
+	void print_CharType_chart(Char from = 14i16, Char to = Fn::max_of<Char>, short char_in_line = 15i16, short max_char = 150i16)
+	{
+		for (int s = from; s < to; ++s) {
+
+			Char c = static_cast<Char>(s);
+
+			wprint_ << std::hex << s << '|' << c << L"  ";
+
+			if (s % char_in_line == 0) wprint_ << end_;
+			std::wcin.clear();
+			if (s % max_char == 0) wwait_;
+			std::wcin.clear();
+		}
+	}
+
 
 	template<typename Char>
 	void print_text(const std::basic_string<Char>& text, size_t max_char_line, int posx = 0, int posy = 0)
