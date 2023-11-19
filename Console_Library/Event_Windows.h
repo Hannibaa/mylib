@@ -7,12 +7,11 @@
 
 #define TITLE(wtitle)         SetConsoleTitle(wtitle)
 
-#define Key(Char)            (unsigned)Char
+#define _u(Char)            ((unsigned)Char)
 
 bool get_out() {
 
 	if ( KeyOn(VK_ESCAPE)) return true;
 	else return false;
-	
 	
 }
