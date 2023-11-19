@@ -30,11 +30,11 @@ namespace Unicode {
 	}
 
 	inline namespace Solid {
-		const wchar_t solid[] = {L'\x2580',	 L'\x2584',	 L'\x2584',
-								 L'\x2588',	 L'\x258c',	 L'\x2590',
-								 L'\x2591',	 L'\x2592',	 L'\x2593',
-								 L'\x25a0',  L'\x25aa',  L'\x25ac',
-								 L'\x25d8',  L'\x25d9',  L'\x25ac'
+		const wchar_t solid[] = {L'\x2580',	 L'\x2584',	 L'\x2584', // 0,1,2
+								 L'\x2588',	 L'\x258c',	 L'\x2590', // 3,4,5
+								 L'\x2591',	 L'\x2592',	 L'\x2593', // 6,7,8
+								 L'\x25a0',  L'\x25aa',  L'\x25ac', // 9,10,11
+								 L'\x25d8',  L'\x25d9',  L'\x25ac'  // 11,12,13
 		};
 	}
 }
