@@ -182,7 +182,45 @@ namespace RNG {
 			fRand = std::uniform_real_distribution<T>(min, max);
 			return fRand(engine);
 		}
+	};
 
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    copyable class like random_device.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	class Random {
+
+		std::string _rand_name;
+
+	public:
+		using result_type = unsigned int;
+
+		Random() {}
+
+		explicit Random(const std::string_view& name) :_rand_name{ name } {}
+
+		_NODISCARD static constexpr result_type(min)() {
+			return 0;
+		}
+
+		_NODISCARD static constexpr result_type(max)() {
+			return static_cast<result_type>(-1);
+		}
+
+		_NODISCARD double entropy() const noexcept {
+			return 32.0;
+		}
+
+		_NODISCARD result_type operator()() {
+			return std::_Random_device();
+		}
+
+		_NODISCARD std::string name() const noexcept {
+			return _rand_name;
+		}
 	};
 
 }
