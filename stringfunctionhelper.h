@@ -16,11 +16,16 @@
 namespace fs = std::filesystem;
 #endif
 
+#ifndef vecString
+#define vecString     std::vector<std::string>
+#endif
+
 namespace Str{
 	// alphabet 
-	const char* alphabet = "abcdefghijklmnopqrstuvwxyz";
-	const char* ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	const char* Number   = "0123456789";
+	const char* alphabet     = "abcdefghijklmnopqrstuvwxyz";
+	const char* ALPHABET     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	const char* all_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+	const char* Number       = "0123456789";
 
 	// function to check character always true
 	bool always_true(int) { return true; }
@@ -77,6 +82,14 @@ namespace Str{
 	bool isalphabet(char c) {
 		//return (c > 64 && c < 91) || (c > 96 && c < 123);
 		return std::isalpha(static_cast<unsigned char>(c));
+	}
+
+	bool isStringalpbabet(std::string& str) {
+		for (int i = 0; i < str.size(); ++i) {
+			if (!std::isalpha(static_cast<unsigned char>(str[i]))) return false;
+		}
+
+		return true;
 	}
 
 	bool isblank(char c) {
@@ -192,6 +205,13 @@ namespace Str{
 		}
 
 		return _str;
+	}
+
+	std::string remove_char(const std::string& text, size_t begin_pos, size_t end_pos, char _char) {
+
+		return text.substr(0, begin_pos) +
+			Str::removeUnusefullCharAny(text.substr(begin_pos, end_pos - begin_pos + 1), ' ') +
+			text.substr(end_pos + 1);
 	}
 
 
