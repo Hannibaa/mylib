@@ -720,7 +720,9 @@ namespace Str{
 	{
 
 		size_t pos_1 = str.find(_char0, last_pos);
-		if (pos_1 == _npos) return str;
+		if (pos_1 == _npos) {
+			return str;
+		}
 
 		size_t pos_2 = str.find(_char1, pos_1 + 1);
 
