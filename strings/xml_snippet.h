@@ -14,6 +14,14 @@
  * http://www.opensource.org/licenses/MIT                                    *
  *                                                                           *
  *****************************************************************************
+ * 
+ *   use only this function to generate files from json file taken from 
+ *   Lewis Lepton
+ *    https://lewislepton.com
+ *    glsl programming code.
+ *
+ *   void generate_snippet_files_from_json(const fs::path json_file, const fs::path& folder)
+ * 
 */
 
 
@@ -362,6 +370,9 @@ namespace xml {
 		return text;
 	}
 
+	std::string make_quicksnippet_code(const Snippet_info& si) {
+		return make_quicksnippet_code(si._name, si._prefix, si._description, si._body);
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -384,6 +395,9 @@ namespace xml {
 
 	}
 
+	std::string make_snippet_code(const std::string& text, const Snippet_info& si) {
+		return make_snippet_code(text, si._name, si._prefix, si._description, si._body);
+	}
     
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -400,12 +414,16 @@ namespace xml {
 		
 		std::string str;
 		size_t pos{};
-
+		//print_ << "size|" << _body.size() << end_;
 		while (1) {
+			if (_body.find('"', pos) == _npos) break;
+
 			str += Str::get_quoted(_body, pos) + "\n";
-			if (pos == _npos || pos == 0 ) break;
+			//print_ << "str|" << str << "|\n"; wait_;
+			if ( pos == 0 ) break;
 			++pos;
-			if (pos > _body.size()) break;
+			//print_ << "pos|" << pos << end_;
+			if (pos > _body.size() - 1 ) break;
 		}
 		//print_ << "str|" << str.size() << end_;
 		str = Str::removeUnusefullCharEnd(str, '\n');
@@ -430,8 +448,12 @@ namespace xml {
 		++pos;
 		if (Str::get_quoted(str, pos) == "body") {
 			++pos;
-			si._body = Str::get_quoted(str, pos, '[', ']');
-			si._body = snippet_process_body_(si._body);
+			if (str.find('[', pos) < str.find('"', pos)) {
+				si._body = Str::get_quoted(str, pos, '[', ']');
+			    si._body = snippet_process_body_(si._body);
+			}
+			else si._body = Str::get_quoted(str, pos);
+
 		}
 
 		++pos;
@@ -456,13 +478,13 @@ namespace xml {
 		while (1) {
 
 			size_t pos_b = json.find('"', pos_0);
-			print_ << "pos_b " << pos_b << end_;
+			//print_ << "pos_b " << pos_b << end_;
 
 			size_t pos_d = json.find("description", pos_0);
 			pos_d = json.find('\n', pos_d);
 			size_t pos_e = json.find('}', pos_d);
 
-			print_ << "pos_e " << pos_e << "|" << json[pos_e] << end_;
+			//print_ << "pos_e " << pos_e << "|" << json[pos_e] << end_;
 
 			if (pos_b == _npos || pos_e == _npos) {
 				// end of file
@@ -470,8 +492,8 @@ namespace xml {
 				break;
 			}
 			auto s = json.substr(pos_b, pos_e - pos_b);
-			print_ << s << end_;
-			wait_;
+			//print_ << s << end_;
+			//wait_;
 			Snippet_info si;
 		    si = json_process_string(s);
 			//vec.push_back(json.substr(pos_b, pos_e - pos_b));
@@ -486,13 +508,34 @@ namespace xml {
 	// print the structure snippet_info
 	void print_snippetInfo(const xml::Snippet_info& si) {
 		Print_(color::Green, "{") << end_;
-		print_ << "Title       = [" << si._name << "]\n";
-		print_ << "Shortcut    = [" << si._prefix << "]\n";
-		print_ << "Body        = [" << si._body << "]\n";
-		print_ << "Description = [" << si._description << "]\n";
+		Print_(color::Red, "Title       = [") << si._name << "]\n";
+		Print_(color::Red, "Shortcut    = [") << si._prefix << "]\n";
+		Print_(color::Red, "Body        = [") << si._body << "]\n";
+		Print_(color::Red, "Description = [") << si._description << "]\n";
 		Print_(color::Green, "}") << end_;
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//       GENERATING SNIPPET FILES FROM JSON FILE.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	void generate_snippet_files_from_json(const fs::path json_file, const fs::path& folder) {
+
+		std::string json = File::loadFileToString(json_file);
+		auto v_si = xml::json_get_SnippetInfo(json);
+
+		std::string ext = ".snippet";
+
+		for (auto& si : v_si) {
+			fs::path file = folder.string() + "\\" + si._name + ext;
+			auto text = xml::make_quicksnippet_code(si);
+			File::saveStringToFile(text, file);
+			Print_(color::Green, "generate file : ") << COLOR(color::Yellow, file.string()) << end_;
+		}
+
+	}
 
 }
 
