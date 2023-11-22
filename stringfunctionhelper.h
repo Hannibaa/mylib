@@ -1,3 +1,23 @@
+/*
+ *****************************************************************************
+ *                                                                           *
+ *                          Platform Independent                             *
+ *                        String function  Library                           *
+ *                                                                           *
+ * Author: KADDA Aoues - haoues_k@yahoo.fr - 2023                            *
+ *                                                                           *
+ * URL :                                                                     *
+ *                                                                           *
+ * Copyright notice:                                                         *
+ * Free use of the Library CFile                                             *
+ * is permitted under the guidelines and in accordance with the most current *
+ * version of the MIT License.                                               *
+ * http://www.opensource.org/licenses/MIT                                    *
+ *                                                                           *
+ *****************************************************************************
+*/
+
+
 #pragma once
 #include <string>
 #include <cstring>
@@ -17,8 +37,16 @@ namespace fs = std::filesystem;
 #endif
 
 #ifndef vecString
-#define vecString     std::vector<std::string>
+using  vecString = std::vector<std::string>;
 #endif
+
+#ifndef vecPath
+using vecPath = std::vector<fs::path>;
+#endif
+
+#define _npos    std::string::npos
+
+using byte = unsigned char;
 
 namespace Str{
 	// alphabet 
@@ -32,7 +60,6 @@ namespace Str{
 
 	// type of comment header
 
-	using byte = unsigned char;
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -153,14 +180,19 @@ namespace Str{
 
 		if (str.empty()) return;
 
-		while (str[str.size() - 1] == Nchar) str.pop_back();
+		while (str[str.size() - 1] == Nchar) {
+			str.pop_back();
+			if (str.empty()) return;
+		}
 
 		int i = 0;
 
-		while (str[i] == Nchar) ++i;
+		while (str[i] == Nchar) {
+              ++i;
+			  if (i > str.size()) break;
+		} 
 
 		str = str.substr(i);
-
 	}
 
 	std::string removeUnusefullCharBiginning(const std::string& str, char Nchar = '0') {
@@ -172,13 +204,14 @@ namespace Str{
 		return str.substr(i);
 	}
 
-	std::string removeUnusefullCharEnd(const std::string& _str, char Nchar = '0') {
+	std::string removeUnusefullCharEnd(std::string str, char Nchar = '0') {
 
-		if (_str.empty()) return _str;
+		if ( str.empty() ) return str;
 
-		std::string str = _str;
-
-		while (str[str.size() - 1] == Nchar) str.pop_back();
+		while (str[str.size() - 1] == Nchar) {
+			str.pop_back();
+			if (str.empty()) break;
+		}
 
 		return str;
 	}
@@ -212,6 +245,27 @@ namespace Str{
 		return text.substr(0, begin_pos) +
 			Str::removeUnusefullCharAny(text.substr(begin_pos, end_pos - begin_pos + 1), ' ') +
 			text.substr(end_pos + 1);
+	}
+
+	// remove successive repitition of char or blank; and leave one 
+	std::string remove_successive_char(std::string text, char _char = ' ') {
+
+		size_t pos{};
+
+		text = Str::removeUnusefullCharBiginning(text, ' ');
+		text = Str::removeUnusefullCharEnd(text, ' ');
+
+		for (;;) {
+			pos = text.find(_char, pos);
+
+			if (pos == _npos) break; else {
+				if (text[pos + 1] == _char) {
+					text.erase(text.begin() + pos);
+				}
+				else pos = pos + 1;
+			}
+		}
+		return text;
 	}
 
 
@@ -658,6 +712,28 @@ namespace Str{
 		return vString;
 
 	}
+
+	// get string first quoted text between _char0 = '"' and _char1 ='"' ;sdfsf "hello"sdfsf ---> [hello]
+	// return last position of second looking of _char1 in stored in last
+
+	std::string get_quoted(const std::string& str, size_t& last_pos, char _char0 = '"', char _char1 = '"')
+	{
+
+		size_t pos_1 = str.find(_char0, last_pos);
+		if (pos_1 == _npos) return str;
+
+		size_t pos_2 = str.find(_char1, pos_1 + 1);
+
+		if (pos_2 == _npos) {
+			last_pos = _npos;
+			return {};
+		}
+
+		last_pos = pos_2;
+
+		return str.substr(pos_1 + 1, pos_2 - pos_1 - 1);
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
