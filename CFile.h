@@ -793,4 +793,57 @@ namespace File {
 		return std::make_pair(vec, vec_rest);
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    LOAD FILE IN STRING, AND SAVE STRING IN FILE.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	std::string loadFileToString(const fs::path& filename) {
+
+		std::ifstream ifs{ filename };
+
+		if (!ifs.is_open()) {
+			std::cout << "error in Opening file " << filename << '\n';
+			return {};
+		}
+
+		size_t size = fs::file_size(filename);
+
+		char* buffer = new char[size] {};
+
+		ifs.read(reinterpret_cast<char*>(buffer), size * sizeof(char));
+
+		std::string temp{ buffer };
+		delete[] buffer;
+
+		ifs.close();
+
+		return temp;
+	}
+
+	void saveStringToFile(const std::string& text, const fs::path filename) {
+		std::ofstream ofs{ filename };
+
+		if (!ofs.is_open()) {
+			std::cout << "Error in Opening file " << filename << '\n';
+			return;
+		}
+
+		ofs << text;
+
+		ofs.close();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    WE WANT GET PATH NAME OF FILE SAME FIRST FILE OPEN
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	fs::path name_same_path_extension(const fs::path& old_file, const std::string& name_file) {
+		// get folder + \\ + name_file + extension.
+		return old_file.parent_path().string() + "\\" + name_file + old_file.extension().string();
+	}
+
 }
