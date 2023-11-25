@@ -221,6 +221,10 @@ namespace RNG {
 		_NODISCARD std::string name() const noexcept {
 			return _rand_name;
 		}
+
+		_NODISCARD static result_type rand() {
+			return std::_Random_device();
+		}
 	};
 
 }
