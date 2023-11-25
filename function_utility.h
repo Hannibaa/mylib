@@ -245,6 +245,7 @@ namespace Function {
 	  T2* ptr2;
 	};
 
+
 }
 
 namespace Fn = Function;
