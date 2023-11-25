@@ -3,8 +3,7 @@
 #include <array>
 #include <list>
 #include <forward_list>
-#include <random>
-#include "C:\Users\Acer\source\MyLib\random_generator.h"
+#include "MyLib\random_generator.h"
 
 namespace Vector_Utility {
 
