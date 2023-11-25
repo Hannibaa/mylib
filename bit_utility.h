@@ -680,32 +680,4 @@ namespace Bit {
 
     }
 
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 
-    //    Printing functions
-    // 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    template<typename T>
-    void print_vector(std::vector<T> v, int Nline = 10) {
-
-        for (int i = 0; i < v.size(); i++) {
-            std::cout << v[i] << " , ";
-            if (i% Nline = Nline - 1) std::cout << '\n';
-        }
-
-    }
-
-    template<typename Container>
-    void print_container(Container C, int Nline = 10) {
-        
-        int i{};
-        for (auto& element : C) {
-            std::cout << element << " , ";
-            if (i % Nline == Nline - 1) std::cout << '\n';
-            ++i;
-        }
-    }
-
 }
