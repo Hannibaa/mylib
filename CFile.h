@@ -727,7 +727,8 @@ namespace File {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
-	//        GET ONLY ALL FILES IN DIRECTORY WITHOUT GO TO SUB DIRECTORY FILES.
+	//        1. GET ONLY ALL FILES IN DIRECTORY WITHOUT GO TO SUB DIRECTORY FILES.
+	//        2. GET ONLY DIRECTORIES OF DIRECTORY.
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -737,6 +738,31 @@ namespace File {
 
 		for (auto& p : fs::directory_iterator(folder_name)) {
 			if (fs::is_regular_file(p.path())) {
+				vec_paths.emplace_back(p.path());
+			}
+		}
+
+		return vec_paths;
+	}
+
+	std::pair<vecPath, vecPath> get_FilesAndDirectories_directory(const fs::path& directory)
+	{
+		vecPath vec_files, vec_dirs;
+
+		for (auto& p : fs::directory_iterator(directory)) {
+			if (fs::is_regular_file(p.path())) 	vec_files.emplace_back(p.path());
+			if (fs::is_directory(p.path()))     vec_dirs.emplace_back(p.path());
+		}
+
+		return std::pair<vecPath, vecPath>(vec_files, vec_dirs);
+	}
+
+	vecPath get_Any_directory(const fs::path& directory, bool(*is_any)(const fs::path&))
+	{
+		vecPath vec_paths{};
+
+		for (auto& p : fs::directory_iterator(directory)) {
+			if (is_any(p.path())) {
 				vec_paths.emplace_back(p.path());
 			}
 		}
