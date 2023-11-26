@@ -171,8 +171,8 @@ namespace Str{
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
-	//                        REMOVE SPACE FROM BEGINING AND END OF STRING 
-	//                        GENERALIZED REMOVING NON MEANING CHARACTER
+	//                        REMOVE SPACE FROM THE BEGINING AND FROM THE END OF STRING 
+	//                        GENERALIZED REMOVING NON MEANING CHARACTER.
 	//        
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 
