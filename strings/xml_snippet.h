@@ -37,6 +37,7 @@
 #define __String(name, text)     std::string name{#text}
 #define _endString(text) const std::string e##text("</"#text">")
 
+#define _Snippet_Code(name)   const xml_element name("<"#name">", "</"#name">")
 
 namespace xml {
 
@@ -84,7 +85,6 @@ namespace xml {
 		~xml_element() = default;
 	 };
 
-#define _Snippet_Code(name)   const xml_element name("<"#name">", "</"#name">")
 
 	 namespace element {
 		 _Snippet_Code(Assembly);
