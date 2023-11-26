@@ -78,7 +78,7 @@ using uchar = unsigned char;
 #define _CwSTR(x)     std::to_wstring(x).c_str()  // usefull macro 
 
 #define _s(str)       #str
-#define _w(wstr)     L#wstr
+#define _w(wstr)      L#wstr
 
 #define _R(r)                     (int( r << 16))
 #define _G(g)                     (int(g << 8 ))
@@ -86,7 +86,6 @@ using uchar = unsigned char;
 #define RGB2INT(r,g,b)            (int(_R(r)|_G(g)|_B(b)))
 
 
-namespace ESC {
 
 #define end_      '\n'
 #define BELL      '\a'
@@ -226,12 +225,68 @@ namespace ESC {
 #define WREPEAT(N,WCHAR)             std::wstring(N,WCHAR).c_str()
 #define REPEAT(N,CHAR)               std::string(N,CHAR).c_str()
 #define _COLOR_FG256(i)                "\x1b[38;5;" << _CSTR(i) << "m"
-#define _wCOLOR_FG256(i)              L"\x1b[38;5;" << _CSTR(i) << "m"
+#define _wCOLOR_FG256(i)              L"\x1b[38;5;" << _CwSTR(i) << L"m"
 #define _COLOR_BG256(i)                "\x1b[48;5;" << _CSTR(i) << "m"
-#define _wCOLOR_BG256(i)              L"\x1b[48;5;" << _CSTR(i) << "m"
+#define _wCOLOR_BG256(i)              L"\x1b[48;5;" << _CwSTR(i) << L"m"
 
 // i6 0..5 ; k36 0..35
 #define _wCOLOR_FG6(i, k)                _wCOLOR_FG256(i + 16 + 6 * k) 
+
+// PRINTING MACRO AND COLORING 
+#define Print_(color256, text)    print_ << _COLOR_FG256(color256) << text << RESETMODE 
+#define WPrint_(color256, text)   wprint_ << _wCOLOR_FG256(color256) << text << RESETMODE 
+#define COLOR(color256, text)     _COLOR_FG256(color256) << text << RESETMODE  
+#define wCOLOR(color256, text)    _wCOLOR_FG256(color256) << text << RESETMODE  
+#define Error_(text)              Print_(color::Red, text) << end_;
+#define wError_(text)             WPrint_(color::Red, text) << wend_;
+	
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//   SCREEN MODE 
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// BEGIN
+
+#define SCREEN_MODE(value) 	       "\x1b[="#value"h"	 // Changes the screen width or type to the mode specified by value.
+#define MODE_MONO_40X25_T		   "\x1b[=0h"                // 40 x 25 monochrome(text)
+#define MODE_COLOR_40X25_T		   "\x1b[=1h"                // 40 x 25 color(text)
+#define MODE_MONO_80X25_T		   "\x1b[=2h"                // 80 x 25 monochrome(text)
+#define MODE_COLOR_80X25_T		   "\x1b[=3h"                // 80 x 25 color(text)
+#define MODE_COLOR_320X200_4_G	   "\x1b[=4h"                // 320 x 200 4 - color(graphics)
+#define MODE_MONO_320X200_G		   "\x1b[=5h"                // 320 x 200 monochrome(graphics)
+#define MODE_MONO_640X200_G		   "\x1b[=6h"                // 640 x 200 monochrome(graphics)
+#define MODE_ENABLE_LINE_WRAPPING  "\x1b[=7h"                // Enables line wrapping
+#define MODE_320X200_G		       "\x1b[=13h"	             // 320 x 200 color(graphics)
+#define MODE_640X200_G		       "\x1b[=14h"	             // 640 x 200 color(16 - color graphics)
+#define MODE_MONO_640X350_G		   "\x1b[=15h"	             // 640 x 350 monochrome(2 - color graphics)
+#define MODE_COLOR_640X350_G	   "\x1b[=16h"	             // 640 x 350 color(16 - color graphics)
+#define MODE_MONO_640X480_G		   "\x1b[=17h"	             // 640 x 480 monochrome(2 - color graphics)
+#define MODE_COLOR_640X480_G	   "\x1b[=18h"	             // 640 x 480 color(16 - color graphics)
+#define MODE_COLOR_320X200_G	   "\x1b[=19h"	             // 320 x 200 color(256 - color graphics)
+
+#define RESET(value)	           "\x1b[="#value"l"	  
+						/*Resets the mode by using the same values that Set Mode uses,
+						 except for 7, which disables line wrapping.The last character
+						 in this escape sequence is a lowercase L.
+						  Common Private Modes
+						 These are some examples of private modes, which are not defined
+						 by the specification, but are implemented in most terminals.
+						 ESC Code Sequence	Description*/
+
+#define  RESTORE_SCREEN		            "\x1b[?47l"    // restore screen
+#define  SAVE_SCREEN		            "\x1b[?47h"    // save screen
+#define  ENABLE_ALTERNATIVE_BUFFER	 	"\x1b[?1049h"	     // enables the alternative buffer
+#define  DISABLE_ALTERNATIVE_BUFFER		"\x1b[?1049l"	     // disables the alternative buffer
+
+ //------------------------------------ END -------------------------------------------------------
+
+
+
+
+
+namespace ESC {
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -338,47 +393,6 @@ namespace ESC {
 
 	};
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// 
-	//   SCREEN MODE 
-	// 
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// BEGIN
-
-#define SCREEN_MODE(value) 	       "\x1b[="#value"h"	 // Changes the screen width or type to the mode specified by value.
-#define MODE_MONO_40X25_T		   "\x1b[=0h"                // 40 x 25 monochrome(text)
-#define MODE_COLOR_40X25_T		   "\x1b[=1h"                // 40 x 25 color(text)
-#define MODE_MONO_80X25_T		   "\x1b[=2h"                // 80 x 25 monochrome(text)
-#define MODE_COLOR_80X25_T		   "\x1b[=3h"                // 80 x 25 color(text)
-#define MODE_COLOR_320X200_4_G	   "\x1b[=4h"                // 320 x 200 4 - color(graphics)
-#define MODE_MONO_320X200_G		   "\x1b[=5h"                // 320 x 200 monochrome(graphics)
-#define MODE_MONO_640X200_G		   "\x1b[=6h"                // 640 x 200 monochrome(graphics)
-#define MODE_ENABLE_LINE_WRAPPING  "\x1b[=7h"                // Enables line wrapping
-#define MODE_320X200_G		       "\x1b[=13h"	             // 320 x 200 color(graphics)
-#define MODE_640X200_G		       "\x1b[=14h"	             // 640 x 200 color(16 - color graphics)
-#define MODE_MONO_640X350_G		   "\x1b[=15h"	             // 640 x 350 monochrome(2 - color graphics)
-#define MODE_COLOR_640X350_G	   "\x1b[=16h"	             // 640 x 350 color(16 - color graphics)
-#define MODE_MONO_640X480_G		   "\x1b[=17h"	             // 640 x 480 monochrome(2 - color graphics)
-#define MODE_COLOR_640X480_G	   "\x1b[=18h"	             // 640 x 480 color(16 - color graphics)
-#define MODE_COLOR_320X200_G	   "\x1b[=19h"	             // 320 x 200 color(256 - color graphics)
-
-#define RESET(value)	           "\x1b[="#value"l"	  
-						/*Resets the mode by using the same values that Set Mode uses,
-						 except for 7, which disables line wrapping.The last character
-						 in this escape sequence is a lowercase L.
-						  Common Private Modes
-						 These are some examples of private modes, which are not defined
-						 by the specification, but are implemented in most terminals.
-						 ESC Code Sequence	Description*/
-
-#define  RESTORE_SCREEN		            "\x1b[?47l"    // restore screen
-#define  SAVE_SCREEN		            "\x1b[?47h"    // save screen
-#define  ENABLE_ALTERNATIVE_BUFFER	 	"\x1b[?1049h"	     // enables the alternative buffer
-#define  DISABLE_ALTERNATIVE_BUFFER		"\x1b[?1049l"	     // disables the alternative buffer
-
-
-
-						 // END
 
 
 	constexpr std::string COLORFG256(uchar i) {
@@ -416,12 +430,6 @@ namespace ESC {
 
 	}
 
-#define Print_(color256, text)    print_ << _COLOR_FG256(color256) << text << RESETMODE 
-#define WPrint_(color256, text)   wprint_ << _wCOLOR_FG256(color256) << text << RESETMODE 
-#define COLOR(color256, text)     _COLOR_FG256(color256) << text << RESETMODE  
-#define wCOLOR(color256, text)    _wCOLOR_FG256(color256) << text << RESETMODE  
-#define Error_(text)              Print_(color::Red, text) << end_;
-#define wError_(text)             WPrint_(color::Red, text) << wend_;
 
 
 	struct Init_Cursor {
