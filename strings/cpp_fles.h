@@ -2,10 +2,10 @@
  *****************************************************************************
  *                                                                           *
  *                                                                           *
- *                  Snippet xml for visual studio  Library                   *
+ *                  C++ comment and todo comment list  Library               *
  *                                                                           *
  * Author: KADDA Aoues - haoues_k@yahoo.fr - 2023                            *
- * Date : 20 / 11 / 2023                                                     *
+ * Date : 23 / 11 / 2023                                                     *
  *                                                                           *
  * Copyright notice:                                                         *
  * Free use of the Library CFile                                             *
@@ -15,12 +15,6 @@
  *                                                                           *
  *****************************************************************************
  *
- *   use only this function to generate files from json file taken from
- *   Lewis Lepton
- *    https://lewislepton.com
- *    glsl programming code.
- *
- *   void generate_snippet_files_from_json(const fs::path json_file, const fs::path& folder)
  *
 */
 
