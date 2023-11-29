@@ -239,6 +239,9 @@ using uchar = unsigned char;
 #define wCOLOR(color256, text)    _wCOLOR_FG256(color256) << text << RESETMODE  
 #define Error_(text)              Print_(color::Red, text) << end_;
 #define wError_(text)             WPrint_(color::Red, text) << wend_;
+
+#define WTEXT_COLOR(fg, bg , text)   _wCOLOR_FG256(fg) << _wCOLOR_BG256(bg) << text << RESETMODE
+#define TEXT_COLOR(fg, bg , text)    _COLOR_FG256(fg) << _COLOR_BG256(bg) << text << RESETMODE
 	
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -522,8 +525,8 @@ namespace ESC {
 		wprint_ << ERASESCREEN << MOVEHOME;
 	}
 
-	void wclear_line() {
-		wprint_ << ERASELINE;
+	void wclear_line(int x, int y) {
+		wprint_ << MOVETO(x,y) << ERASELINE;
 	}
 
 	void print_wchar_chart(short from = 14i16, short to = SHRT_MAX, short char_in_line = 15i16, short max_char = 150i16)
