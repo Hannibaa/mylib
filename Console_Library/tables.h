@@ -34,19 +34,24 @@ struct TITLE {
 };
 
 // Contructor for TITLE stuct
-#define CellCtor(T,name, bg, fg, width, sep0 , sep1 )     	TITLE T; \
-                                        T._bgcolor = bg_color(bg);			 \
-                                        T._fgcolor = fg_color(fg);			 \
-                                        T._name = #name;					 \
-                                        T._width = width;					 \
-                                        T._sep0 = sep0;						 \
-                                        T._sep1 = sep1;						 \
+#define CellCtor(T,name, bg, fg, width, sep0 , sep1 )     	TITLE T;     \
+   /* define background color */     T._bgcolor = bg_color(bg);			 \
+   /* define text color */           T._fgcolor = fg_color(fg);			 \
+   /* define name of cell */         T._name = #name;					 \
+   /* define width of cell */        T._width = width;					 \
+   /* define first separator '|' */  T._sep0 = sep0;					 \
+   /* define last separator '|' */   T._sep1 = sep1;					 \
 
 // macro table formatting
+#define _cell(t,right_left)             t._sep0                \
+                                     << t._fgcolor             \
+                                     << t._bgcolor             \
+                                     << std::setw(t._width)    \
+                                     << std::right_left        \
+                                     << t._name << RESETMODE   \
+                                     << t._sep1                \
 
-#define _cell(t,right_left)     t._sep0 << t._fgcolor << t._bgcolor << std::setw(t._width)   \
-                                       << std::right_left << t._name << RESETMODE << t._sep1 \
-
+// Macro : Draw from struct title 
 #define _cellv(t,right_left, value)   t._sep0 << t._fgcolor << t._bgcolor << std::setw(t._width)   \
                                        << std::right_left << value << RESETMODE << t._sep1 \
 
