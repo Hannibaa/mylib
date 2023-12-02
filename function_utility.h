@@ -13,6 +13,7 @@
 */
 
 #include <MyLib/Console_Library/escape_code.h>
+#include <sstream>
 
 
 // use Fn in namespace 
@@ -232,7 +233,19 @@ namespace Function {
 	 constexpr auto clamp(decltype(lo_value) value) {
 		 return value < lo_value ? lo_value : hi_value < value ? hi_value : value;
 	 }
-     
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    return size of letteral any stringable object
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+	template<typename Tchar, typename Stringable>
+	constexpr size_t _size(const Stringable& value) {
+		std::basic_stringstream<Tchar> ss;
+		ss << value;
+		return ss.str().size();
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
