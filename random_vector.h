@@ -208,10 +208,36 @@ namespace Vector_Utility {
 		container.resize(N);
 
 		for (auto it = container.begin(); it != container.end(); ++it) {
+			if constexpr ( std::is_floating_point_v<T> )
+			*it = random(1.f);
+			else
 			*it = random();
 		}
 
 		return container;
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    make equi - distance container
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename Container, typename T = typename Container::value_type>
+	Container make_equi_distance_container(T min, T max, size_t number_values)
+	{
+		Container v;
+		v.insert(v.end(),min);
+
+		T offset = (max - min) / static_cast<T>(number_values - 1);
+		
+		for (size_t t = 1; t < number_values - 1; ++t) {
+			v.insert(v.end(), min + offset * static_cast<T>(t));
+		}
+
+		v.insert(v.end(), max);
+
+		return v;
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
