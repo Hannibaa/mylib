@@ -65,7 +65,7 @@
  //       FIRST 0 TO 15 IS ALWAYS USED COLOR
  //       FROM 16 TO 231 IS GRADUAL COLOR AND WORKING LIKE SHIFT OF 6 STEP BY COLOR
  //         16 + 6 * K ; AND K = 0 TO 36 , 16 + 6 * 36 NOT INCLUDE.
- //    3.
+ //    3. DEFINE STRUCTURE sCONSOLE_TEXT { text; color_fg,color_bg, coordx,coordy}.
  // 
  //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -95,7 +95,7 @@ using uchar = unsigned char;
 #define NEWPAGE   '\f'
 #define CR        '\r'
 #define ESCAPE    '\x1b'
-#define DELETE    '\x7F'
+#define _DELETE    '\x7F'
 
 
 #define SET_MAX_LENGTH(n)        "\x1b[" << _CSTR(n) << " u" // ESC [ n u Sets maximum length of lines in window to n.
@@ -137,8 +137,10 @@ using uchar = unsigned char;
 #define MOVEONELINEUP            "\x1b M"    // moves cursor one line up, scrolling if needed
 #define SAVECURSORPOSITION       "\x1b 7"    // save cursor position (DEC)
 #define RESTORCUR_SAVED_POS      "\x1b 8"	 // restores the cursor to the last saved position (DEC
-#define SAVECURSORPOSITION       "\x1b[s"	 // save cursor position (SCO)
-#define RESTORCUR_SAVED_POS      "\x1b[u"	 // restores the cursor to the last saved position (SCO)
+#define SAVE_CURSOR_POSITION     "\x1b 7"    // save cursor position (DEC)
+#define RESTOR_CURSOR_POSITION   "\x1b 8"
+#define SAVECURSORPOSITION_       "\x1b[s"	 // save cursor position (SCO)
+#define RESTORCUR_SAVED_POS_      "\x1b[u"	 // restores the cursor to the last saved position (SCO)
 
 #define  CURSOR_INVISIBLE		 "\x1b[?25l"    // make cursor invisible
 #define  CURSOR_VISIBLE     	 "\x1b[?25h"    // make cursor visible
@@ -414,7 +416,7 @@ namespace ESC {
 
 	}
 
-	enum FGBG { FG = 38, BG = 48 };
+	enum FGBG  { FG = 38, BG = 48 };
 
 	constexpr std::string rgbCOLOR_BG(uint r, uint g, uint b) {
 
@@ -432,6 +434,79 @@ namespace ESC {
 		return str;
 
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//                                                               /////////////////////////////////////////
+	//    STRUCTURE SECTION DEFINITION OF ALL CONSOLE TYPES HERE	 /////////////////////////////////////////
+	// 																 /////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+		// Structure of point
+	template<typename T>
+	struct Point2d {
+		T x;
+		T y;
+
+		Point2d(T _x = T{}, T _y = T{}) : x{ _x }, y{ _y } {}
+
+		T& operator[](size_t t) {
+			if (t == 0) return x;
+			if (t == 1) return y;
+			Print_(Color256::Red, "Undefined!!!") << end_;
+		}
+
+		T operator[](size_t t) const {
+			if (t == 0) return x;
+			if (t == 1) return y;
+			Print_(Color256::Red, "Undefined!!!") << end_;
+		}
+	};
+
+
+	// Structure for console text input Tchar
+	template<typename Tchar>
+	struct sCONSOLE_TEXT {
+		std::basic_string<Tchar> text; // text to be affiched:
+		int x;						   // coordinate in console, of first letter
+		int y;						   // coordinate in console
+		int fg_color;				   // foreground color or text color
+		int bg_color;				   // background color
+	};
+
+	template<typename Tchar>
+	struct cString : public std::basic_string<Tchar> {
+
+		using std::basic_string<Tchar>::basic_string;
+
+		void set_position(int a, int b) {
+			x = a; y = b;
+		}
+
+		Point2d<int> get_position() const {
+			return Point2d<int>{ x,y };
+		}
+
+		void set_color(int _foreground, int _background = 0) {
+			fg_color = _foreground;
+			bg_color = _background;
+		}
+
+		int get_foreGroundColor() const {
+			return fg_color;
+		}
+
+		int get_backGroundColor() const {
+			return bg_color;
+		}
+
+	private:
+		int x;						   // coordinate in console, of first letter
+		int y;						   // coordinate in console
+		int fg_color;				   // foreground color or text color
+		int bg_color;				   // background color
+	};
 
 
 
@@ -560,6 +635,15 @@ namespace ESC {
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    Printing text in box 
+	//    1. Parameter
+	//       1.1 text 
+	//       1.2 maximum character in line 
+	//       1.3 position posx and posy .
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template<typename Char>
 	void print_text(const std::basic_string<Char>& text, size_t max_char_line, int posx = 0, int posy = 0)
@@ -573,6 +657,11 @@ namespace ESC {
 		}
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    Add color to any printing function to console
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template<typename Function, typename ...Ts>
 	void _coloring(color _color, Function func, const Ts&...args) {
@@ -581,6 +670,13 @@ namespace ESC {
 		wprint_ << RESETMODE;
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    custom any function for any style represented by escape code.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	template<typename Style, typename Function, typename ...Ts>
 	void customize(Style _style, Function _function, const Ts&...args) {
 		wprint_ << _style;
@@ -588,268 +684,313 @@ namespace ESC {
 		wprint_ << RESETMODE;
 	}
     
+	void put_string_at(int x, int y, const std::wstring& wstr, color _color = color::White) {
+		wprint_ << MOVETO(x, y);
+		WPrint_(_color, wstr);
+	}
+
+	void put_char_at(int x, int y, const char c, int _color) {
+		wprint_ << MOVETO(x, y);
+		WPrint_(_color, c);
+	}
+
+	void put_string_horizontal_at(int x, int y, const std::wstring& str, int color) {
+
+		wprint_ << SAVECURSORPOSITION;
+		for (int k = 0; k != str.size(); ++k) {
+			wprint_ << MOVETO(x, y - k)
+				<< wCOLOR(color, str[k]);
+		}
+		wprint_ << RESTORCUR_SAVED_POS;
+	}
+
+	void put_string_horizontal_up_at(int x, int y, const std::wstring& str, int color)
+	{
+		wprint_ << SAVECURSORPOSITION;
+		for (int k = 0; k != str.size(); ++k) {
+			wprint_ << MOVETO(x, y + k)
+				<< wCOLOR(color, str[k]);
+		}
+		wprint_ << RESTORCUR_SAVED_POS;
+		return;
+	}
+
+	void put_string_horizontal_up_at2(int x, int y, const std::wstring& str, int color)
+	{
+		size_t pos{};
+
+		pos = str.find_last_of(L' ');
+		put_string_horizontal_up_at(x - 2, y, str.substr(pos + 1), color);
+		put_string_horizontal_up_at(x, y, str.substr(0, pos - 1), color);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    CONVERT RGB TO 256 CONSOLE COLORS.
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	int _rgb_colors[256]{
-0x000000,        
-0x800000,
-0x008000,  // rgb(128, 0, 0); (r, g, b):
-0x808000,
-0x000080,
-0x800080,
-0x008080,
-0xc0c0c0,
-0x808080,
-0xff0000,
-0x00ff00,
-0xffff00,
-0x0000ff,
-0xff00ff,
-0x00ffff,
-0xffffff,
-0x000000,
-0x00005f,
-0x000087,
-0x0000af,
-0x0000d7,
-0x0000ff,
-0x005f00,
-0x005f5f,
-0x005f87,
-0x005faf,
-0x005fd7,
-0x005fff,
-0x008700,
-0x00875f,
-0x008787,
-0x0087af,
-0x0087d7,
-0x0087ff,
-0x00af00,
-0x00af5f,
-0x00af87,
-0x00afaf,
-0x00afd7,
-0x00afff,
-0x00d700,
-0x00d75f,
-0x00d787,
-0x00d7af,
-0x00d7d7,
-0x00d7ff,
-0x00ff00,
-0x00ff5f,
-0x00ff87,
-0x00ffaf,
-0x00ffd7,
-0x00ffff,
-0x5f0000,
-0x5f005f,
-0x5f0087,
-0x5f00af,
-0x5f00d7,
-0x5f00ff,
-0x5f5f00,
-0x5f5f5f,
-0x5f5f87,
-0x5f5faf,
-0x5f5fd7,
-0x5f5fff,
-0x5f8700,
-0x5f875f,
-0x5f8787,
-0x5f87af,
-0x5f87d7,
-0x5f87ff,
-0x5faf00,
-0x5faf5f,
-0x5faf87,
-0x5fafaf,
-0x5fafd7,
-0x5fafff,
-0x5fd700,
-0x5fd75f,
-0x5fd787,
-0x5fd7af,
-0x5fd7d7,
-0x5fd7ff,
-0x5fff00,
-0x5fff5f,
-0x5fff87,
-0x5fffaf,
-0x5fffd7,
-0x5fffff,
-0x870000,
-0x87005f,
-0x870087,
-0x8700af,
-0x8700d7,
-0x8700ff,
-0x875f00,
-0x875f5f,
-0x875f87,
-0x875faf,
-0x875fd7,
-0x875fff,
-0x878700,
-0x87875f,
-0x878787,
-0x8787af,
-0x8787d7,
-0x8787ff,
-0x87af00,
-0x87af5f,
-0x87af87,
-0x87afaf,
-0x87afd7,
-0x87afff,
-0x87d700,
-0x87d75f,
-0x87d787,
-0x87d7af,
-0x87d7d7,
-0x87d7ff,
-0x87ff00,
-0x87ff5f,
-0x87ff87,
-0x87ffaf,
-0x87ffd7,
-0x87ffff,
-0xaf0000,
-0xaf005f,
-0xaf0087,
-0xaf00af,
-0xaf00d7,
-0xaf00ff,
-0xaf5f00,
-0xaf5f5f,
-0xaf5f87,
-0xaf5faf,
-0xaf5fd7,
-0xaf5fff,
-0xaf8700,
-0xaf875f,
-0xaf8787,
-0xaf87af,
-0xaf87d7,
-0xaf87ff,
-0xafaf00,
-0xafaf5f,
-0xafaf87,
-0xafafaf,
-0xafafd7,
-0xafafff,
-0xafd700,
-0xafd75f,
-0xafd787,
-0xafd7af,
-0xafd7d7,
-0xafd7ff,
-0xafff00,
-0xafff5f,
-0xafff87,
-0xafffaf,
-0xafffd7,
-0xafffff,
-0xd70000,
-0xd7005f,
-0xd70087,
-0xd700af,
-0xd700d7,
-0xd700ff,
-0xd75f00,
-0xd75f5f,
-0xd75f87,
-0xd75faf,
-0xd75fd7,
-0xd75fff,
-0xd78700,
-0xd7875f,
-0xd78787,
-0xd787af,
-0xd787d7,
-0xd787ff,
-0xd7af00,
-0xd7af5f,
-0xd7af87,
-0xd7afaf,
-0xd7afd7,
-0xd7afff,
-0xd7d700,
-0xd7d75f,
-0xd7d787,
-0xd7d7af,
-0xd7d7d7,
-0xd7d7ff,
-0xd7ff00,
-0xd7ff5f,
-0xd7ff87,
-0xd7ffaf,
-0xd7ffd7,
-0xd7ffff,
-0xff0000,
-0xff005f,
-0xff0087,
-0xff00af,
-0xff00d7,
-0xff00ff,
-0xff5f00,
-0xff5f5f,
-0xff5f87,
-0xff5faf,
-0xff5fd7,
-0xff5fff,
-0xff8700,
-0xff875f,
-0xff8787,
-0xff87af,
-0xff87d7,
-0xff87ff,
-0xffaf00,
-0xffaf5f,
-0xffaf87,
-0xffafaf,
-0xffafd7,
-0xffafff,
-0xffd700,
-0xffd75f,
-0xffd787,
-0xffd7af,
-0xffd7d7,
-0xffd7ff,
-0xffff00,
-0xffff5f,
-0xffff87,
-0xffffaf,
-0xffffd7,
-0xffffff,
-0x080808,
-0x121212,
-0x1c1c1c,
-0x262626,
-0x303030,
-0x3a3a3a,
-0x444444,
-0x4e4e4e,
-0x585858,
-0x626262,
-0x6c6c6c,
-0x767676,
-0x808080,
-0x8a8a8a,
-0x949494,
-0x9e9e9e,
-0xa8a8a8,
-0xb2b2b2,
-0xbcbcbc,
-0xc6c6c6,
-0xd0d0d0,
-0xdadada,
-0xe4e4e4,
-0xeeeeee
-};
+                     0x000000,
+                     0x800000,
+                     0x008000,  // rgb(128, 0, 0); (r, g, b):
+                     0x808000,
+                     0x000080,
+                     0x800080,
+                     0x008080,
+                     0xc0c0c0,
+                     0x808080,
+                     0xff0000,
+                     0x00ff00,
+                     0xffff00,
+                     0x0000ff,
+                     0xff00ff,
+                     0x00ffff,
+                     0xffffff,
+                     0x000000,
+                     0x00005f,
+                     0x000087,
+                     0x0000af,
+                     0x0000d7,
+                     0x0000ff,
+                     0x005f00,
+                     0x005f5f,
+                     0x005f87,
+                     0x005faf,
+                     0x005fd7,
+                     0x005fff,
+                     0x008700,
+                     0x00875f,
+                     0x008787,
+                     0x0087af,
+                     0x0087d7,
+                     0x0087ff,
+                     0x00af00,
+                     0x00af5f,
+                     0x00af87,
+                     0x00afaf,
+                     0x00afd7,
+                     0x00afff,
+                     0x00d700,
+                     0x00d75f,
+                     0x00d787,
+                     0x00d7af,
+                     0x00d7d7,
+                     0x00d7ff,
+                     0x00ff00,
+                     0x00ff5f,
+                     0x00ff87,
+                     0x00ffaf,
+                     0x00ffd7,
+                     0x00ffff,
+                     0x5f0000,
+                     0x5f005f,
+                     0x5f0087,
+                     0x5f00af,
+                     0x5f00d7,
+                     0x5f00ff,
+                     0x5f5f00,
+                     0x5f5f5f,
+                     0x5f5f87,
+                     0x5f5faf,
+                     0x5f5fd7,
+                     0x5f5fff,
+                     0x5f8700,
+                     0x5f875f,
+                     0x5f8787,
+                     0x5f87af,
+                     0x5f87d7,
+                     0x5f87ff,
+                     0x5faf00,
+                     0x5faf5f,
+                     0x5faf87,
+                     0x5fafaf,
+                     0x5fafd7,
+                     0x5fafff,
+                     0x5fd700,
+                     0x5fd75f,
+                     0x5fd787,
+                     0x5fd7af,
+                     0x5fd7d7,
+                     0x5fd7ff,
+                     0x5fff00,
+                     0x5fff5f,
+                     0x5fff87,
+                     0x5fffaf,
+                     0x5fffd7,
+                     0x5fffff,
+                     0x870000,
+                     0x87005f,
+                     0x870087,
+                     0x8700af,
+                     0x8700d7,
+                     0x8700ff,
+                     0x875f00,
+                     0x875f5f,
+                     0x875f87,
+                     0x875faf,
+                     0x875fd7,
+                     0x875fff,
+                     0x878700,
+                     0x87875f,
+                     0x878787,
+                     0x8787af,
+                     0x8787d7,
+                     0x8787ff,
+                     0x87af00,
+                     0x87af5f,
+                     0x87af87,
+                     0x87afaf,
+                     0x87afd7,
+                     0x87afff,
+                     0x87d700,
+                     0x87d75f,
+                     0x87d787,
+                     0x87d7af,
+                     0x87d7d7,
+                     0x87d7ff,
+                     0x87ff00,
+                     0x87ff5f,
+                     0x87ff87,
+                     0x87ffaf,
+                     0x87ffd7,
+                     0x87ffff,
+                     0xaf0000,
+                     0xaf005f,
+                     0xaf0087,
+                     0xaf00af,
+                     0xaf00d7,
+                     0xaf00ff,
+                     0xaf5f00,
+                     0xaf5f5f,
+                     0xaf5f87,
+                     0xaf5faf,
+                     0xaf5fd7,
+                     0xaf5fff,
+                     0xaf8700,
+                     0xaf875f,
+                     0xaf8787,
+                     0xaf87af,
+                     0xaf87d7,
+                     0xaf87ff,
+                     0xafaf00,
+                     0xafaf5f,
+                     0xafaf87,
+                     0xafafaf,
+                     0xafafd7,
+                     0xafafff,
+                     0xafd700,
+                     0xafd75f,
+                     0xafd787,
+                     0xafd7af,
+                     0xafd7d7,
+                     0xafd7ff,
+                     0xafff00,
+                     0xafff5f,
+                     0xafff87,
+                     0xafffaf,
+                     0xafffd7,
+                     0xafffff,
+                     0xd70000,
+                     0xd7005f,
+                     0xd70087,
+                     0xd700af,
+                     0xd700d7,
+                     0xd700ff,
+                     0xd75f00,
+                     0xd75f5f,
+                     0xd75f87,
+                     0xd75faf,
+                     0xd75fd7,
+                     0xd75fff,
+                     0xd78700,
+                     0xd7875f,
+                     0xd78787,
+                     0xd787af,
+                     0xd787d7,
+                     0xd787ff,
+                     0xd7af00,
+                     0xd7af5f,
+                     0xd7af87,
+                     0xd7afaf,
+                     0xd7afd7,
+                     0xd7afff,
+                     0xd7d700,
+                     0xd7d75f,
+                     0xd7d787,
+                     0xd7d7af,
+                     0xd7d7d7,
+                     0xd7d7ff,
+                     0xd7ff00,
+                     0xd7ff5f,
+                     0xd7ff87,
+                     0xd7ffaf,
+                     0xd7ffd7,
+                     0xd7ffff,
+                     0xff0000,
+                     0xff005f,
+                     0xff0087,
+                     0xff00af,
+                     0xff00d7,
+                     0xff00ff,
+                     0xff5f00,
+                     0xff5f5f,
+                     0xff5f87,
+                     0xff5faf,
+                     0xff5fd7,
+                     0xff5fff,
+                     0xff8700,
+                     0xff875f,
+                     0xff8787,
+                     0xff87af,
+                     0xff87d7,
+                     0xff87ff,
+                     0xffaf00,
+                     0xffaf5f,
+                     0xffaf87,
+                     0xffafaf,
+                     0xffafd7,
+                     0xffafff,
+                     0xffd700,
+                     0xffd75f,
+                     0xffd787,
+                     0xffd7af,
+                     0xffd7d7,
+                     0xffd7ff,
+                     0xffff00,
+                     0xffff5f,
+                     0xffff87,
+                     0xffffaf,
+                     0xffffd7,
+                     0xffffff,
+                     0x080808,
+                     0x121212,
+                     0x1c1c1c,
+                     0x262626,
+                     0x303030,
+                     0x3a3a3a,
+                     0x444444,
+                     0x4e4e4e,
+                     0x585858,
+                     0x626262,
+                     0x6c6c6c,
+                     0x767676,
+                     0x808080,
+                     0x8a8a8a,
+                     0x949494,
+                     0x9e9e9e,
+                     0xa8a8a8,
+                     0xb2b2b2,
+                     0xbcbcbc,
+                     0xc6c6c6,
+                     0xd0d0d0,
+                     0xdadada,
+                     0xe4e4e4,
+                     0xeeeeee
+	};
     
     std::map<int, int>  _ansi_color;
-
-	
 
 	void make_color_map(std::map<int, int>& map, int* _array, size_t _size_array) {
 
@@ -859,9 +1000,9 @@ namespace ESC {
 			map[_array[t]] = t;
 	}
 
-#define    DEFINE_rgb2ansi   std::map<int, int>  esc::_ansi_color;         \
+#define    DEFINE_rgb2ansi   std::map<int, int>  esc::_ansi_color;                   \
 	       esc::make_color_map(esc::_ansi_color, esc::_rgb_colors , 256) ;           \
-	       esc::InterContainer rgb2ansi(&_ansi_color);                     \
+	       esc::InterContainer rgb2ansi(&_ansi_color);                               \
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -915,11 +1056,17 @@ namespace ESC {
 				 112,113,114,115,118,119,120,121,149,150,151,
 				 154,155,156,157,158, 191,192,193, };
 
+	////////////////////////////// END  RGB TO CONSOLE 256 COLOR ////////////////////////////////////////
 }
 
 
+// define these two structure for text in console;
+using csString = ESC::cString<char>;
+using cwString = ESC::cString<wchar_t>;
 
-
+// define integer and float points
+using Pint = ESC::Point2d<int>;
+using Pfloat = ESC::Point2d<float>;
 
 
 
