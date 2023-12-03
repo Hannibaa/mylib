@@ -46,6 +46,9 @@
 #include <string>
 #include <iomanip>
 #include <map>
+#include <algorithm>
+#include <chrono>
+
 #include <MyLib\Console_Library\Unicode_table.h>
 #include "MyLib/function_utility.h"
 
@@ -295,7 +298,8 @@ namespace ESC {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
-	//    define string macro as const char *
+	//    COLOR ENUMERATION AND NAME SPACES
+	//    FUNCTION CONVERTING FROM AND TO COLOR ANSI CONSOLE
 	// 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// BEGIN
@@ -348,30 +352,9 @@ namespace ESC {
 		Aqua,
 		White,  // = 15; 16 MASTER COLOR.
 		// COLOR GRADIANT
-		// BLUE
-		Grey0,
-		NavyBlue,
-		DarkBlue,
-		Blue3,
-		Blue1,
-		// GREEN 1
-		DarkGreen,
-		DeepSkyBlue40,
-		DeepSkyBlue41,
-		DeepSkyBlue42,
-		DodgerBlue3,
-		DodgerBlue2,
-		// GREEN 4
-		Green4,
-		SpringGreen4,
-		Turquoise4,
-		DeepSkyBlue30,
-		DeepSkyBlue31,
-		DodgerBlue1,
-
+		// you can get this color by macro _rgb(r,g,b) r,g and b varied from 0 to 5;
 		// Grey : 
-		Grey100 = 231,
-		Grey3,
+		Grey3 = 232,
 		Grey7,
 		Grey11,
 		Grey15,
@@ -434,6 +417,19 @@ namespace ESC {
 		return str;
 
 	}
+
+	constexpr int ansi_color(int r, int g, int b) {
+		r = std::clamp(r, 0, 5);
+		g = std::clamp(g, 0, 5);
+		b = std::clamp(b, 0, 5);
+		return (36 * r) + (6 * g) + b + 16;
+	}
+
+	template<int r, int g, int b>
+	constexpr int ansi_color(){ return ansi_color(r,g,b);	}
+
+#define _rgb   esc::ansi_color
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -565,6 +561,8 @@ namespace ESC {
 
 #define INIT_CURSOR      ESC::Init_Cursor    init_cursor
 #define WINIT_CURSOR     ESC::wInit_Cursor   init_cursor
+#define WHIDE_CURSOR     WINIT_CURSOR
+#define HIDE_CURSOR      INIT_CURSOR
 #define INIT_WCHAR_TEXT  ESC::Wchar_Mode     init_wchart_text
 }
 
@@ -592,8 +590,13 @@ namespace ESC {
 		print_ << ERASESCREEN << MOVEHOME;
 	}
 
-	void clear_line() {
-		print_ << ERASELINE;
+	void cls(int x, int y, int width, int length, int colour = color::Black) {
+		for (int j = 0; j != length; ++j)
+			print_ << MOVETO(x,y + j) << _COLOR_BG256(colour) << REPEAT(width,' ') << RESETMODE;
+	}
+
+	void clear_line(int x,int y) {
+		print_ << MOVETO(x, y) << ERASELINE;
 	}
 
 	void wcls() {
@@ -601,7 +604,7 @@ namespace ESC {
 	}
 
 	void wclear_line(int x, int y) {
-		wprint_ << MOVETO(x,y) << ERASELINE;
+		wprint_ << WMOVETO(x,y) << ERASELINE;
 	}
 
 	void print_wchar_chart(short from = 14i16, short to = SHRT_MAX, short char_in_line = 15i16, short max_char = 150i16)
@@ -1032,7 +1035,7 @@ namespace ESC {
 
 			auto it = ptr_container->upper_bound(key);
 
-			if (it == ptr_container->end()) return (--ptr_container->end())->second;
+			if (it == ptr_container->end()) return {};// (--ptr_container->end())->second;
 
 			return it->second;
 		}
@@ -1057,6 +1060,32 @@ namespace ESC {
 				 154,155,156,157,158, 191,192,193, };
 
 	////////////////////////////// END  RGB TO CONSOLE 256 COLOR ////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //    Small class handle times elapsed in game loop
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	class Elapsed_Time {
+
+		std::chrono::system_clock::time_point _start;
+		std::chrono::duration<float> _duration;
+
+	public:
+
+		Elapsed_Time()
+			: _start{ std::chrono::system_clock::now() }
+			, _duration{}
+		{}
+
+		float operator()() {
+			_duration = std::chrono::system_clock::now() - _start;
+			_start = std::chrono::system_clock::now();
+			return _duration.count();
+		}
+	};
+
 }
 
 
@@ -1067,8 +1096,5 @@ using cwString = ESC::cString<wchar_t>;
 // define integer and float points
 using Pint = ESC::Point2d<int>;
 using Pfloat = ESC::Point2d<float>;
-
-
-
 
 namespace esc = ESC;
