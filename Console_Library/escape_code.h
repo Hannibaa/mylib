@@ -687,14 +687,16 @@ namespace ESC {
 		wprint_ << RESETMODE;
 	}
     
-	void put_string_at(int x, int y, const std::wstring& wstr, color _color = color::White) {
-		wprint_ << MOVETO(x, y);
-		WPrint_(_color, wstr);
+	void put_string_at(int x, int y, const std::wstring& wstr, int _color = color::White) {
+		wprint_ << WMOVETO(x, y)
+			    << _wCOLOR_FG256(_color)
+			    << wstr << RESETMODE;
 	}
 
 	void put_char_at(int x, int y, const char c, int _color) {
-		wprint_ << MOVETO(x, y);
-		WPrint_(_color, c);
+		wprint_ << WMOVETO(x, y)
+			    << _wCOLOR_FG256(_color)
+			    << c << RESETMODE;
 	}
 
 	void put_string_horizontal_at(int x, int y, const std::wstring& str, int color) {
