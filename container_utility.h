@@ -201,6 +201,12 @@ namespace Container {
 
 	template<typename Container>
 	void print_container(const Container& container, std::string_view comment = "") {
+
+		if (container.empty()) {
+			Print_(color::Red, "There no element :") << COLOR(color::Yellow, "[Empty Container]") << end_;
+			return;
+		}
+
 		print_ << comment << end_;
 		for (const auto& element : container)
 			if constexpr (Has_Mapped_and_Key_Type<Container>)
