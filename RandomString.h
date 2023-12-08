@@ -11,6 +11,10 @@
 //                 "A___---S" REMPLACE ALL '-' BY ALPHABET UPPERCASE
 //                      AND '_' LOWER CASE.
 
+// todo  UNVALIDE CODE THAT MIXED C WITH C++ 
+//           *** USING RANDOM TIME MIXED WITH RANDOM PURE C PROGRAM 
+// 
+
 char* RandomCString(const char* formula) // 
 {
 	std::random_device rd{};
@@ -48,6 +52,7 @@ char* RandomCString(const char* formula) //
 const char* randstring(int length)  // 'a' = 97, 'z' = 122;
 {
 	std::random_device rd{};
+	std::mt19937 gen(rd());
 	std::uniform_int_distribution<> rNum{ 0 , 1000 };
 
 	if (length > 20 || length < 1)
@@ -59,7 +64,7 @@ const char* randstring(int length)  // 'a' = 97, 'z' = 122;
 
 	char* str = new char[length + 1];
 
-	for (int i = 0; i < length; i++) str[i] = 97 + rNum(rd) % 26;
+	for (int i = 0; i < length; i++) str[i] = 97 + rNum(gen) % 26;
 	str[length] = '\0';
 	return str;
 }
