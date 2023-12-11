@@ -108,13 +108,96 @@ namespace table {
         return ss.str();
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //     CLASS TABLE
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     class ITable {
     public:
 
-
+        virtual void set_style(const STYLE&) = 0;
+        virtual void draw() const = 0;
 
         virtual ~ITable() {}
     };
 
+
+    class DTable {
+    public:
+        Pint _pos;                  // upper left coordinate of table
+
+        // style of cell should be one;
+        STYLE               _style;
+
+        std::string         _title;
+        std::string         _Xtitle;
+        std::string         _Ytitle;
+
+
+        DTable(int x, int y , const std::string_view& title)
+            :_pos{x,y}
+            ,_title{title}
+            , _Xtitle{}
+            , _Ytitle{}
+        {}
+
+        virtual ~DTable() {}
+    };
+
+
+    template<typename Xtype, typename Ytype>
+    class Table : private DTable , public ITable {
+
+        std::vector<Xtype>   _vecX;
+        std::vector<Xtype>   _vecY;
+
+    public:
+
+        Table(int x, int y, std::string_view title)
+            :DTable(x,y,title)
+            , _vecX{}
+            , _vecY{}
+        {}
+
+
+        virtual void set_style(const STYLE& style) override {
+           _style = style;
+        }
+
+        void set_title(const std::string_view title)  {
+            _title = title;
+        }
+
+        void set_titlesXY(const std::string_view titleX, const std::string_view titleY) {
+            _Xtitle = titleX;
+            _Ytitle = titleY;
+        }
+
+        void add_line(const Xtype& x, const Ytype& y)  {
+            _vecX.push_back(x);
+            _vecY.push_back(y);
+        }
+
+
+        virtual void draw() const override {
+            printm_(_pos.x, _pos.y);
+            print_ << _cell(_Xtitle, _style, left)
+                   << _cell(_Ytitle, _style, left)
+                ;
+
+            for (int j = 0; j < _vecX.size(); ++j) {
+                printm_(_pos.x, _pos.y + j + 1);
+                print_ << _cell(_vecX[j], _style, left)
+                       << _cell(_vecY[j], _style, left);
+            }
+
+        }
+    };
 }
