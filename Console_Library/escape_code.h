@@ -220,7 +220,9 @@ using uchar = unsigned char;
 #define wait_            std::cin.get()
 #define wwait_           std::wcin.get()
 #define print_           std::cout 
+#define printm_(x,y)     print_ << MOVETO(x,y)
 #define wprint_          std::wcout
+#define wprintm_(x,y)    wprint_ << WMOVETO(x,y)
 #define newline_         std::cout << end_
 #define wnewline_        std::wcout << end_
 
