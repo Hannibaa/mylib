@@ -92,6 +92,14 @@ namespace table {
                                                    << text << RESETMODE          \
                                                    << style._e_sep          \
     
+    // make macro for _cell underline;
+#define    _cell_uline(text, style, left_right)    style._b_sep << UNDERLINE << _COLOR_BG256( style._bg_color)    \
+                                                   << _COLOR_FG256(style._fg_color)    \
+                                                   << std::setw(style._width)    \
+                                                   << std::left_right            \
+                                                   << text << RESETMODE          \
+                                                   << style._e_sep          \
+
 
     void make_simple_table( const std::string& title,        STYLE s_title,
                             const std::string& sub_title_l,  STYLE s_sub_left,
@@ -135,22 +143,32 @@ namespace table {
 
         // style of cell should be one;
         STYLE               _style;
+        STYLE               _style_title;
+        STYLE               _style_cells;
+        STYLE               _style_head;
 
         std::string         _title;
         std::string         _Xtitle;
         std::string         _Ytitle;
 
-
-        DTable(int x, int y , const std::string_view& title)
+        DTable(int x, int y, const std::string_view& title, 
+            const STYLE& unique_style = STYLE{})  // todo define predefined style
             :_pos{x,y}
             ,_title{title}
             , _Xtitle{}
             , _Ytitle{}
+            , _style{unique_style}
+            , _style_title{unique_style}
+            , _style_head{unique_style}
+            , _style_cells{unique_style}
         {}
 
         virtual ~DTable() {}
     };
 
+
+    // this table only for two element
+    // will making multicolomne element in Excel.
 
     template<typename Xtype, typename Ytype>
     class Table : private DTable , public ITable {
@@ -171,6 +189,18 @@ namespace table {
            _style = style;
         }
 
+        void set_style_title(const STYLE& style) {
+            _style_title = style;
+        }
+
+        void set_style_cell(const STYLE& style) {
+            _style_cells = style;
+        }
+
+        void set_style_head(const STYLE& style) {
+            _style_head = style;
+        }
+
         void set_title(const std::string_view title)  {
             _title = title;
         }
@@ -185,19 +215,115 @@ namespace table {
             _vecY.push_back(y);
         }
 
+        void add_lines(const std::vector<Xtype>& vx, const std::vector<Ytype>& vy) {
+            _vecX.insert(_vecX.end(), vx.begin(), vx.end());
+            _vecY.insert(_vecY.end(), vy.begin(), vy.end());
+        }
 
         virtual void draw() const override {
-            printm_(_pos.x, _pos.y);
-            print_ << _cell(_Xtitle, _style, left)
-                   << _cell(_Ytitle, _style, left)
-                ;
+
+            // making begin style and end style 
+            STYLE send = _style_cells;
+            send._b_sep = 0;
+
+            STYLE hend = _style_head;
+            hend._b_sep = 0;
+
+
+            printm_(_pos.x + 3, _pos.y - 2) << _cell(_title, _style_title, left);
+
+            printm_(_pos.x, _pos.y) ;
+            print_ << _cell_uline(_Xtitle, _style_head, left)
+                   << _cell_uline(_Ytitle, hend, left)  ;
 
             for (int j = 0; j < _vecX.size(); ++j) {
                 printm_(_pos.x, _pos.y + j + 1);
-                print_ << _cell(_vecX[j], _style, left)
-                       << _cell(_vecY[j], _style, left);
+                print_ << _cell(_vecX[j], _style_cells, left)
+                       << _cell(_vecY[j], send, left);
             }
 
         }
     };
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //     Multicolomn Table
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class IMTable {
+    public:
+        
+        virtual void draw() const = 0;
+
+
+        ~IMTable() {}
+    };
+
+    class DMTable {
+    public:
+
+        using sTitle = std::pair<std::string, STYLE>;
+#define  _tcell(stitle, left_right)  _cell(stile.first, stitle.second, left_right)
+#define  _utcell(stitle, left_right) _cell_uline(stitle.first, stitle.second, left_right)
+
+        Pint                        _pos;
+
+        sTitle                      _title;
+        std::vector<sTitle>         _Vtitles;
+
+        DMTable(int x, int y, std::string_view title, STYLE title_style)
+            :_pos(x, y)
+            ,_title{title,title_style}
+        {}
+
+        virtual void set_cellHead(const std::string_view stitle, const STYLE& style) = 0;
+
+        ~DMTable() {}
+    };
+
+    template<typename...Ts >
+    class MTable : private DMTable, public IMTable {
+
+        std::tuple<std::vector<Ts>...>  Values;
+        constexpr size_t Column = sizeof...(Ts);
+
+    public:
+
+        MTable(int x, int y, const std::string_view title, STYLE title_style)
+            :DMTable(x,y, title, title_style)
+            , Values{}
+        {}
+
+        virtual void set_cellHead(const std::string_view title, const STYLE& style) override {
+            _Vtitles.emplace_back(title, style);
+        }
+
+        void 
+
+
+        virtual void draw() override const {
+            // making begin style and end style 
+
+            printm_(_pos.x + 3, _pos.y - 2) << _tcell(_title, left);
+
+            printm_(_pos.x, _pos.y);
+            for (const auto& Xtitle : _Vtitles)
+                print_ << _utcell(Xtitle, left);
+
+
+            for (int j = 0; j < _vecX.size(); ++j) {
+                printm_(_pos.x, _pos.y + j + 1);
+                for (int i = 0; i < Column; ++i)
+                    print_ << _tcell(std::get<i>(Values)[j], left);
+            }
+        }
+
+    };
+
+
 }
