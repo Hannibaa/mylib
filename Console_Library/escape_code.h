@@ -550,6 +550,7 @@ namespace ESC {
 		std::string _bg;
 		std::string _fg;
 	};
+
 	struct Wchar_Mode {
 		Wchar_Mode() {
 			SETMODE_WTTEXT;
@@ -561,11 +562,23 @@ namespace ESC {
 		}
 	};
 
-#define INIT_CURSOR      ESC::Init_Cursor    init_cursor
-#define WINIT_CURSOR     ESC::wInit_Cursor   init_cursor
-#define WHIDE_CURSOR     WINIT_CURSOR
-#define HIDE_CURSOR      INIT_CURSOR
-#define INIT_WCHAR_TEXT  ESC::Wchar_Mode     init_wchart_text
+	struct Unicode_Mode {
+		Unicode_Mode() {
+			SETMODE_UNICODE;
+		}
+
+		~Unicode_Mode() {
+			SETMODE_TEXT;
+			print_ << "text mode\n";
+		}
+	};
+
+#define INIT_CURSOR       ESC::Init_Cursor    init_cursor
+#define WINIT_CURSOR      ESC::wInit_Cursor   init_cursor
+#define WHIDE_CURSOR      WINIT_CURSOR
+#define HIDE_CURSOR       INIT_CURSOR
+#define INIT_WCHAR_TEXT   ESC::Wchar_Mode     init_wchart_text
+#define INIT_UNICODE_TEXT ESC::Unicode_Mode   init_unicode_text
 }
 
 
@@ -631,7 +644,7 @@ namespace ESC {
 
 			Char c = static_cast<Char>(s);
 
-			wprint_ << std::hex << s << '|' << c << L"  ";
+			wprint_ << std::hex << s << L'|' << c << L"  ";
 
 			if (s % char_in_line == 0) wprint_ << end_;
 			std::wcin.clear();
