@@ -90,6 +90,32 @@ namespace Str{
 		return std::string(c, c + sizeof(T));
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// 
+	//    Convert String element to vector element
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// function that take string<Char> and converted to vector<Char> :
+    // using std::copy function
+	template<typename TChar>
+	std::vector<TChar>  to_vector(const std::basic_string<TChar>& String) {
+
+		std::vector<TChar> vec(String.size());
+		std::copy(String.begin(), String.end(), vec.begin());
+		return vec;
+	}
+
+	// function that take string<Char> and converted to vector<Char> :
+	// using memcpy function
+	template<typename TChar>
+	std::vector<TChar>  to_vector_memcpy(const std::basic_string<TChar>& String) {
+
+		std::vector<TChar> vec(String.size());
+		std::memcpy(vec.data(), String.data(), String.size() * sizeof(TChar));
+		return vec;
+	}
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////
 	//
