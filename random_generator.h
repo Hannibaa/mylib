@@ -229,3 +229,5 @@ namespace RNG {
 
 }
 
+namespace rng = RNG;
+
