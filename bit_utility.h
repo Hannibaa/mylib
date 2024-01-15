@@ -1,11 +1,12 @@
-#pragma once
-/*             Authur : KADDA Aoues 
+/*             Authur  : KADDA Aoues 
                Library : Bit utility 
                Date    : ?? / ?? / 2023                         
                 
-                */
+*/
 
+#pragma once
 #include <utility>
+#include <bit>
 #include <vector>
 #include <array>
 #include <string>
@@ -28,60 +29,68 @@
 
 */
 
-namespace Bit {
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+//    TYPES AND MACROS
+// 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using byte = unsigned char;
+
+
+const std::string Base16{ "0123456789abcdef" };
+
 
 #define IS_COPYABLE(X)   std::is_trivially_copyable_v<X>
-#pragma waring(disable : 4996)
 #define IS_POD(X)        std::is_pod_v<X>   // this is dipricated in new standard c++20;
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 
-    //                           1. TYPES AND STRUCTURE AND MACROS
-    // 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Color Macro And Macro conversion and masking
 
-#define _RED(x)       (uchar)(x & 0x000000ff)
-#define _GREEN(x)     (uchar)((x & 0x0000ff00) >> 8 )
-#define _BLUE(x)      (uchar)((x & 0x00ff0000) >> 16 )
-#define _ALPHA(x)     (uchar)((x & 0xff000000) >> 24 )
+#define _RED(x)                 ((uchar)(x & 0x000000ff))
+#define _GREEN(x)               ((uchar)((x & 0x0000ff00) >> 8 ))
+#define _BLUE(x)                ((uchar)((x & 0x00ff0000) >> 16 ))
+#define _ALPHA(x)               ((uchar)((x & 0xff000000) >> 24 ))
 
-#define _CHAR_LL_INT    _RED
-#define _CHAR_LH_INT    _GREEN
-#define _CHAR_HL_INT    _BLUE
-#define _CHAR_HH_INT    _ALPHA
+#define _CHAR_LL_INT            _RED
+#define _CHAR_LH_INT            _GREEN
+#define _CHAR_HL_INT            _BLUE
+#define _CHAR_HH_INT            _ALPHA
 
-#define _INTRED(x)    ((int(x)) & (0x000000ff))
-#define _INTGREEN(x)  (((int(x))<<8) & (0x0000ff00))
-#define _INTBLUE(x)   (((int(x))<<16) & (0x00ff0000))
-#define _INTALPHA(x)  (((int(x))<<24) & (0xff000000))
+#define _INTRED(x)              ((int(x)) & (0x000000ff))
+#define _INTGREEN(x)            (((int(x))<<8) & (0x0000ff00))
+#define _INTBLUE(x)             (((int(x))<<16) & (0x00ff0000))
+#define _INTALPHA(x)            (((int(x))<<24) & (0xff000000))
 
-#define _INT_L_INT64(X)     static_cast<int>(X & 0x0000'0000'ffff'ffff)
-#define _INT_H_INT64(X)     static_cast<int>((X & 0xffff'ffff'0000'0000) >> 32)
+#define _INT_L_INT64(X)         static_cast<int>(X & 0x0000'0000'ffff'ffff)
+#define _INT_H_INT64(X)         static_cast<int>((X & 0xffff'ffff'0000'0000) >> 32)
 
 // unsigned short to int and reverse Macro
-#define _SHORT_L_INT(x)       static_cast<short>(x & 0x0000ffff)
-#define _SHORT_H_INT(x)       static_cast<short>((x & 0xffff0000) >> 16 )
+#define _SHORT_L_INT(x)         static_cast<short>(x & 0x0000ffff)
+#define _SHORT_H_INT(x)         static_cast<short>((x & 0xffff0000) >> 16 )
 
-#define _SHORT_TO_LINT(x)     (int(x) & (0x0000ffff))
-#define _SHORT_TO_HINT(x)     ((int(x)) << 16)
+#define _SHORT_TO_LINT(x)       (int(x) & (0x0000ffff))
+#define _SHORT_TO_HINT(x)       ((int(x)) << 16)
 
-#define _CHAR_TO_LLINT(x)     (int(x) & (0x000000ff))
-#define _CHAR_TO_LHINT(x)     (((int(x))<<8) & (0x0000ffff))
-#define _CHAR_TO_HLINT(x)     (((int(x))<<16) & (0x00ffffff))
-#define _CHAR_TO_HHINT(x)     ((int(x))<<24)
+#define _CHAR_TO_LLINT(x)       (int(x) & (0x000000ff))
+#define _CHAR_TO_LHINT(x)       (((int(x))<<8) & (0x0000ffff))
+#define _CHAR_TO_HLINT(x)       (((int(x))<<16) & (0x00ffffff))
+#define _CHAR_TO_HHINT(x)       ((int(x))<<24)
 
 #define POWER2TYPE(TYPE,N)    ((TYPE)((TYPE)1 << (TYPE)N ))
 
-    using uchar = unsigned char;
-    using ushort = unsigned short;
-    using uint = unsigned int;
-    using Byte = unsigned char;
 
-    const std::string Base16{ "0123456789abcdef" };
+namespace Bit {
 
     enum Bit { Zero = 0, One };
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //                           UNION TYPES.
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // integer 32 bit to float 32 union
     union int_float {
@@ -97,13 +106,15 @@ namespace Bit {
 
     // Union between field of byte and type T
     template<typename T, int N = sizeof(T)>
+    requires std::is_trivially_copyable_v<T>
     union byte_type {
         T value;
-        Byte byte[N];
+        byte byte[N];
     };
 
     // Print operator
     template<typename T>
+    requires std::is_trivially_copyable_v<T>
     std::ostream& operator << (std::ostream& os, byte_type<T> _data) {
         for (int i = 0; i < sizeof(T); i++) {
             os << (int)_data.byte[i] << " , ";
@@ -112,14 +123,17 @@ namespace Bit {
     }
 
 
-
     // Field of Bytes 
     template<size_t N>
     struct Byte_Field {
-        Byte byte[N];
+        byte Byte[N];
 
-        Byte& operator[](size_t i) {
-            return byte[i];
+        byte& operator[](size_t i) {
+            return Byte[i];
+        }
+
+        byte operator[](size_t i) const {
+            return Byte[i];
         }
     };
 
@@ -129,7 +143,6 @@ namespace Bit {
     //    BIT MASK FUNCTIONS
     // 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define makeBitMask make_bitMask 
 
     template<typename T, int from, int to, bool b = (to < 8 * sizeof(T) && from < to) >
     constexpr T make_bitMask() {
@@ -137,7 +150,7 @@ namespace Bit {
         static_assert(b, "out of range of size of type");
 
         T x{};
-        Byte* pbyte = (Byte*)&x;
+        byte* pbyte = (byte*)&x;
 
         for (int i = from; i < to + 1; i++) {
 
@@ -149,39 +162,52 @@ namespace Bit {
         return x;
     };
 
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
     //    get Subtype from T type at position n 
     // 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    template<typename SubType, typename T>
-    constexpr SubType getSubType(const T& x, unsigned int position) {
-        static_assert(std::is_trivially_copyable_v<T>, "T type should be trivially copyable");
-        static_assert(std::is_trivially_copyable_v<SubType>, "SubType type should be trivially copyable");
+    /*
+              make general function that vectorization a type T to a SubType and extracted in a vector
+              for exemple 
+                     T |ffff|ffff|ffff|ffff| is 64 bits type and we want to extract to type char
+                     and short and int 
+                     int[2], short[4], char[8].
+                     getSubType<char>(const T& x) -> char[8];
+    */
 
-        // condition on integer n 
-        if (position > sizeof(T) / sizeof(SubType) - 1) {
-            std::cout << "check a position value \n";
-            return {};
-        }
+    template<typename SubType, typename T, size_t N = sizeof(T)/sizeof(SubType)>
+    requires std::is_trivially_copyable_v<T> && std::is_trivially_copyable_v<SubType>
+                &&  ( sizeof(T) % sizeof(SubType) == 0 )
+    auto  getSubType(const T& x) {
+               
+        std::array<SubType, N> t;
 
-        SubType a{};
-        std::memcpy(&a, (SubType*)&x + position, sizeof(SubType));
+        std::memcpy(t.data(), &x, sizeof(T));
 
-        return a;
+        return t;
     }
 
-    // Templated one 
-    template<typename SubType, size_t N, typename T>
-    constexpr SubType getSubType(const T& x) {
-        static_assert(N < sizeof(T) / sizeof(SubType), "check a position value N");
-        return getSubType<SubType>(x, N);
+    template<typename SubType, typename T>
+    requires std::is_trivially_copyable_v<T> && std::is_trivially_copyable_v<SubType>
+             && (sizeof(T) >= sizeof(SubType))
+    constexpr SubType _getSubType(const T& x, int _posbytes = 0) {
+                 // check that reading position always stay inside variable x
+
+                 SubType t{};
+                 std::memcpy(&t, ((char*)&x) + _posbytes, sizeof(SubType));
+                 return t;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 
     //        GENERALIZATION OF PREVIOUS FUNCTION .
+    //        This function designed like following : 
+    //        |abc|defgs|gf| this struct of 10 char and 
+    //        |012|34567|89| we want to get subtype (of 5 char) from 3;
+    //        value of subtype is : defgs ;
     // 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -192,7 +218,7 @@ namespace Bit {
         static_assert(std::is_trivially_copyable_v<IndexType>, "IndexType should be trivially copyable");
         static_assert(sizeof(IndexType) + sizeof(SubType) <= sizeof(T), "verify types size");
 
-        // condition on integer n 
+        // condition on integer n.
         if (n > (sizeof(T) / sizeof(SubType)) + sizeof(SubType) / sizeof(IndexType) - 2) {
             std::cout << "\n check the number n\n";
             return {};
@@ -237,6 +263,71 @@ namespace Bit {
         return value;
     }
 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //    LOADING ANY TYPE TO VECTOR OF BYTES
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    template<typename T>
+    std::vector<byte> load_toVector(const T& x) {
+
+        std::vector<byte> vec(sizeof(T));
+        std::memcpy(vec.data(), &x, sizeof(T));
+        return vec;
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //    MAKE A NEW TYPE FROM CONTENGIOUS MEMORY ARRAY OF BYTE
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // 1. making one element
+    template<typename T, typename Array>
+        requires requires(Array A) {
+        requires sizeof(typename Array::value_type) == 1;
+        A.data();
+    }
+    constexpr T make_data_from(const Array& vec, size_t position) {
+
+        // add condition about positioning and size of vectors
+        if (position + sizeof(T) > vec.size()) {
+            std::cout << "overflow ; check position and size of variable\n";
+            return {};
+        }
+
+        T t{};
+        std::memcpy(&t, vec.data() + position, sizeof(T));
+        return t;
+    }
+
+	template<typename T, typename Array>
+		requires requires(Array A) {
+		requires sizeof(typename Array::value_type) == 1;
+	    A.data(); 
+	}
+	std::vector<T> make_data_from(const Array& vec) {
+		// check if size of T > than size of vec
+		if (vec.size() < sizeof(T)) {
+			std::cout << "we can't make type\n";
+			return {};
+		}
+
+		// we should make calculation : 
+		// size of vector / size of T :
+		size_t size = vec.size() / sizeof(T);
+
+		std::vector<T> result(size);
+		std::memcpy(result.data(), vec.data(), size * sizeof(T));
+
+		return result;
+	}
+
+
+
+        
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                                      //
@@ -309,7 +400,7 @@ namespace Bit {
             U uu;
         };
 
-        ut _ut;
+        ut _ut{};
         _ut.uu = u;
 
         return _ut.ut;
@@ -326,36 +417,36 @@ namespace Bit {
 
     //    Making new type from two types, by using c-styles
 
-    template< typename Resultype, typename Tlo, typename Thi>
-    constexpr Resultype 
-        
-        make_type_c(const Tlo& x, const Thi& y)
-    {
-        // all type here should be integer type or arithmetic type build-in type
-        // we need Meta-programming for this concepts
-        // may be use concepts from standard library
-        static_assert(sizeof(Resultype) >= sizeof(Tlo) + sizeof(Thi));
-        static_assert(std::is_trivially_copyable_v<Resultype> && 
-                      std::is_trivially_copyable_v<Tlo> &&
-                      std::is_trivially_copyable_v<Thi>, "Should be a copyable types");
+	template< typename Resultype, typename Tlo, typename Thi>
+	constexpr Resultype
+
+		make_type_c(const Tlo& x, const Thi& y)
+	{
+		// all type here should be integer type or arithmetic type build-in type
+		// we need Meta-programming for this concepts
+		// may be use concepts from standard library
+		static_assert(sizeof(Resultype) >= sizeof(Tlo) + sizeof(Thi));
+		static_assert(std::is_trivially_copyable_v<Resultype> &&
+			std::is_trivially_copyable_v<Tlo> &&
+			std::is_trivially_copyable_v<Thi>, "Should be a copyable types");
 
 
-        Resultype z{};
-        Byte* pTlo = (Byte*)&x;
-        Byte* pThi = (Byte*)&y;
-        Byte* pz = (Byte*)&z;
+		Resultype z{};
+		byte* pTlo = (byte*)&x;
+		byte* pThi = (byte*)&y;
+		byte* pz = (byte*)&z;
 
-        for (int i = 0; i < sizeof(Tlo); i++)
-        {
-            *(pz + i) = *(pTlo + i);
-        }
-        for (int i = 0; i < sizeof(Thi); i++)
-        {
-            *(pz + i + sizeof(Tlo)) = *(pThi + i);
-        }
+		for (int i = 0; i < sizeof(Tlo); i++)
+		{
+			*(pz + i) = *(pTlo + i);
+		}
+		for (int i = 0; i < sizeof(Thi); i++)
+		{
+			*(pz + i + sizeof(Tlo)) = *(pThi + i);
+		}
 
-        return z;
-    }
+		return z;
+	}
 
     //     MAKING A TYPE USING MEMCPY
     template< typename Resultype, typename Tlo, typename Thi>
@@ -372,16 +463,16 @@ namespace Bit {
 
         Resultype R{}; 
         std::memcpy(&R, &x, sizeof(Tlo));
-        std::memcpy(((Byte*) & R) + sizeof(Tlo), &y, sizeof(Thi));
+        std::memcpy(((byte*) & R) + sizeof(Tlo), &y, sizeof(Thi));
 
         return R;
     }
 
     // Making using C++ technic 
-        //     MAKING A TYPE USING MEMCPY
+        //     MAKING A TYPE USING STRUCT 
     template< typename Resultype, typename Tlo, typename Thi>
     constexpr Resultype
-        make_type(const Tlo& x, const Thi& y)
+        make_type_struct(const Tlo& x, const Thi& y)
     {
         // all type here should be integer type or arithmetic type build-in type
         // we need Meta-programming for this concepts
@@ -432,7 +523,7 @@ namespace Bit {
         int nhi = sizeof(ResulThi);
 
         ResulThi xhi{};
-        Byte* pbyte = (Byte*)&x, * phi = (Byte*)&xhi;
+        byte* pbyte = (byte*)&x, * phi = (byte*)&xhi;
         ResulTlo* pxlo = (ResulTlo*)&x;
 
         for (int i = 0; i < nhi; i++)
@@ -480,7 +571,7 @@ namespace Bit {
     int get_bit_at_c(T x, int n) {
         if (n < 0 || n > N * 8) { std::cout << "number of bit is out of size of type\n"; return T{}; }
 
-        Byte* pbyte = (Byte*)&x;
+        byte* pbyte = (byte*)&x;
 
         int _n = n / 8;
         int __n = n % 8;
@@ -520,7 +611,7 @@ namespace Bit {
         if (n > Size * 8) return {};
 
         // using C style better
-        Byte* pbyte = (Byte*)&t;
+        byte* pbyte = (byte*)&t;
 
         int _n =  int(n) / 8;
         int __n = int(n) % 8;
@@ -554,18 +645,18 @@ namespace Bit {
 
     ////////// Get byte C-Style
     template<typename T, int N = sizeof(T)>
-    Byte get_byte_at_c(T x, int n) {
+    byte get_byte_at_c(T x, int n) {
 
         if (n < 0 || n > N) { std::cout << "number of bit is out of size of type\n"; return T{}; }
 
-        Byte* pbyte = (Byte*)&x;
+        byte* pbyte = (byte*)&x;
 
         return *(pbyte + n);
     }
 
 
     ////////// Byte getter function;
-    template<typename Integer = Byte ,typename T, size_t Size = sizeof(T)>
+    template<typename Integer = byte ,typename T, size_t Size = sizeof(T)>
     constexpr Integer
 
         byte_n(const T& t, size_t n) {
@@ -579,7 +670,7 @@ namespace Bit {
 
 
     ///////// get bytes as in array
-    template<typename Integer = Byte, typename T, size_t Size = sizeof(T)>
+    template<typename Integer = byte, typename T, size_t Size = sizeof(T)>
     constexpr std::array<Integer, Size>
 
         bytes(const T& t) {
