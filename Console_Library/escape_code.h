@@ -1010,8 +1010,6 @@ namespace ESC {
                      0xeeeeee
 	};
     
-    std::map<int, int>  _ansi_color;
-
 	void make_color_map(std::map<int, int>& map, int* _array, size_t _size_array) {
 
 		map.clear();
@@ -1020,9 +1018,6 @@ namespace ESC {
 			map[_array[t]] = t;
 	}
 
-#define    DEFINE_rgb2ansi   std::map<int, int>  esc::_ansi_color;                   \
-	       esc::make_color_map(esc::_ansi_color, esc::_rgb_colors , 256) ;           \
-	       esc::InterContainer rgb2ansi(&_ansi_color);                               \
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -1070,7 +1065,11 @@ namespace ESC {
 		}
 	};
 
-	InterContainer rgb2ansi(&_ansi_color);
+	// macro to make 
+#define    DEFINE_rgb2ansi   std::map<int, int>  _ansi_color;                   \
+	       esc::make_color_map(_ansi_color, esc::_rgb_colors , 256) ;           \
+	       esc::InterContainer rgb2ansi(&_ansi_color);                               \
+
 
 	int CGreen[]{ 2,10,22,28,29,34,35,40,41,42,46,47,48,71,77,78,82,83,84,85,107,108,
 				 112,113,114,115,118,119,120,121,149,150,151,
