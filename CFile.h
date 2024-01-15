@@ -287,6 +287,13 @@ namespace File {
 			is_modified_ = true;
 		}
 
+		/*
+		     std::random_device rd{}
+			 std::mt199 mt{rd()};
+			 std::uniform_int_distribution<> ud{1,23}
+			 std::vector<int> v(5)
+			 std::generate(v.begin(), v.end(), [&ud, &mt]{return 
+			 */
 
 		void encrypt() {
 			NOT_IMPL;
@@ -403,7 +410,7 @@ namespace File {
 			text_data_.reserve(file_size_+1);
 
 			for (auto& element : data_) text_data_.push_back(static_cast<CharT>(element));
-
+			 
 			return text_data_;
 
 		}
