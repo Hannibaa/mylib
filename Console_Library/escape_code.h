@@ -240,12 +240,13 @@ using uchar = unsigned char;
 #define _wCOLOR_FG6(i, k)                _wCOLOR_FG256(i + 16 + 6 * k) 
 
 // PRINTING MACRO AND COLORING 
-#define Print_(color256, text)    print_ << _COLOR_FG256(color256) << text << RESETMODE 
-#define WPrint_(color256, text)   wprint_ << _wCOLOR_FG256(color256) << text << RESETMODE 
-#define COLOR(color256, text)     _COLOR_FG256(color256) << text << RESETMODE  
-#define wCOLOR(color256, text)    _wCOLOR_FG256(color256) << text << RESETMODE  
-#define Error_(text)              Print_(color::Red, text) << end_;
-#define wError_(text)             WPrint_(color::Red, text) << wend_;
+#define Print_(color256, text)         print_ << _COLOR_FG256(color256) << text << RESETMODE 
+#define Printm_(x,y,color256, text)    printm_(x,y) << _COLOR_FG256(color256) << text << RESETMODE 
+#define WPrint_(color256, text)        wprint_ << _wCOLOR_FG256(color256) << text << RESETMODE 
+#define COLOR(color256, text)          _COLOR_FG256(color256) << text << RESETMODE  
+#define wCOLOR(color256, text)         _wCOLOR_FG256(color256) << text << RESETMODE  
+#define Error_(text)                   Print_(color::Red, text) << end_;
+#define wError_(text)                  WPrint_(color::Red, text) << wend_;
 
 #define WTEXT_COLOR(fg, bg , text)   _wCOLOR_FG256(fg) << _wCOLOR_BG256(bg) << text << RESETMODE
 #define TEXT_COLOR(fg, bg , text)    _COLOR_FG256(fg) << _COLOR_BG256(bg) << text << RESETMODE
