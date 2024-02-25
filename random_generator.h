@@ -28,7 +28,7 @@ namespace RNG {
 
 	template<typename Type = void>
 	class RG {
-
+		static_assert(std::is_arithmetic_v<Type>, "Type should be arithmetic type");
 		using T = typename std::conditional<std::is_integral_v<Type>, Type, int>::type;
 		using F = typename std::conditional<std::is_floating_point_v<Type>, Type, float>::type;
 
@@ -56,6 +56,15 @@ namespace RNG {
 
 		F operator () ( F ) {
 			return ufRand(engine);
+		}
+
+		auto rand() {
+			if constexpr (std::is_integral_v<Type>) {
+				return uiRand(engine);
+			}
+			else {
+				return ufRand(engine);
+			}
 		}
 
 		void setRange(T min, T max) {
@@ -116,6 +125,10 @@ namespace RNG {
 			m_alpha = NewStr;
 		}
 
+		char rand() {
+			return operator()();
+		}
+
 	};
 
 	// specialization for unsigned charactere
@@ -136,6 +149,10 @@ namespace RNG {
 
 		unsigned char operator() () {
 			return static_cast<unsigned char>(CharRand(engine));
+		}
+
+		auto rand() {
+			return operator()();
 		}
 
 	};

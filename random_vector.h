@@ -157,7 +157,7 @@ namespace Vector_Utility {
 		RNG::RG<T> random(min, max);
 
 		std::list<T> List;
-
+		
 		for (size_t i = 0; i != size; ++i)
 			List.emplace_back(random()); 		return List;
 	}

@@ -12,6 +12,8 @@
 #include <unordered_set>
 #include <stack>
 #include <queue>
+#include <string>
+#include <string_view>
 
 // static_vector; 
 // library for pointer vector and vector operation

@@ -23,7 +23,10 @@
 #pragma once
 #include <concepts>
 #include <string_view>
-#include <MyLib/Console_Library/escape_code.h>
+
+#include "MyLib/Headers/my_concepts.h"
+#include "MyLib/random_generator.h"
+
 
 #ifndef print_
 #define print_       std::cout 
@@ -95,7 +98,7 @@ namespace Container {
 	template<typename Container>
 		requires requires {
 		typename Container::value_type;
-			requires !Has_Mapped_and_Key_Type<Container>;
+		requires !Has_Mapped_and_Key_Type<Container>;
 	}
 	void rotate_container_to_value(const typename Container::value_type& value, Container& container)
 	{
@@ -217,6 +220,88 @@ namespace Container {
 
 		print_ << BACKSPACE << BACKSPACE << ' ' << end_;
 	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//  
+	//     MAKING FUNCTION THAT MAKE RANDOM OBJECT
+	//     1. MAKE CONTAINERS OF ARITHMETIC TYPE
+	//     2. MAKE RANDOM CONTAINER OF RANDOMS OBJECT.  
+	// 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// make random container that have push_back or insert function member
+	template<typename Container, typename T = typename Container::value_type>
+	auto make_random_container(T min, T max, size_t size) {
+		rng::RG<T> rg(min, max);
+
+		Container container{};
+
+		for (size_t t = 0; t != size; ++t) {
+			T value = rg.rand();
+			if constexpr (Concept::HasPushBack<Container, T>) {
+				container.push_back(value);
+			}
+			else {
+				container.insert(value);
+			}
+		}
+
+		return container;
+	}
+
+	// make random container by using function generator
+	template<typename Container, typename T = typename Container::value_type, typename Generator>
+		requires std::invocable<Generator, T, T>
+	auto make_random_container(T min, T max, size_t size, Generator generator) {
+
+		Container container{};
+
+		for (size_t t = 0; t != size; ++t) {
+			T value = generator(min, max);
+			if constexpr (Concept::HasPushBack<Container, T>) {
+				container.push_back(value);
+			}
+			else {
+				container.insert(value);
+			}
+		}
+
+		return container;
+	}
+
+	// Make random for Array type container.
+	template<typename Array, typename T = typename Array::value_type>
+	auto make_random_container(T min, T max) {
+		print_ << "call array function" << end_;
+		if (min > max) std::swap(min, max);
+
+		rng::RG<T> rg(min, max);
+
+		Array _array{};
+
+		for (auto& element : _array) element = rg.rand();
+
+		return _array;
+	}
+
+	// Make random for Array with function generator
+	template<typename Array, typename T = typename Array::value_type, typename Generator>
+		requires std::invocable<Generator, T, T>
+	auto make_random_container(T min, T max, Generator generator) {
+
+		if (min > max) std::swap(min, max);
+
+		Array _array{};
+
+		for (size_t t = 0; t != _array.size(); ++t) {
+			T value = generator(min, max);
+			_array[t] = value;
+		}
+
+		return _array;
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
