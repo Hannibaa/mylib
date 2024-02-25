@@ -90,15 +90,16 @@ using uchar = unsigned char;
 
 
 
-#define end_      '\n'
-#define BELL      '\a'
-#define hTAB      '\t'
-#define vTAB      '\v'
-#define BACKSPACE '\b'
-#define NEWPAGE   '\f'
-#define CR        '\r'
-#define ESCAPE    '\x1b'
+#define end_       '\n'
+#define BELL       '\a'
+#define hTAB       '\t'
+#define vTAB       '\v'
+#define BACKSPACE  '\b'
+#define NEWPAGE    '\f'
+#define CR         '\r'
+#define ESCAPE     '\x1b'
 #define _DELETE    '\x7F'
+#define _CTRL_C    (char(3))
 
 
 #define SET_MAX_LENGTH(n)        "\x1b[" << _CSTR(n) << " u" // ESC [ n u Sets maximum length of lines in window to n.
