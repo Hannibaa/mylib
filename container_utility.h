@@ -13,8 +13,6 @@
  * Copyright notice:                                                         *
  * Free use of the Library CFile                                             *
  * is permitted under the guidelines and in accordance with the most current *
- * version of the MIT License.                                               *
- * http://www.opensource.org/licenses/MIT                                    *
  *                                                                           *
  *****************************************************************************
 */
@@ -26,7 +24,7 @@
 
 #include "MyLib/Headers/my_concepts.h"
 #include "MyLib/random_generator.h"
-
+#include "MyLib/Console_Library/escape_code.h"
 
 #ifndef print_
 #define print_       std::cout 
@@ -47,6 +45,36 @@
 
 
 namespace Container {
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //     copy between two deferent sequence containers
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename Container1, typename Container2>
+	void xcopy(Container1& dest, const Container2& source) {
+		dest.resize(sizeof(typename Container2::value_type) * source.size());
+		memcpy(dest.data(), source.data(), sizeof(typename Container2::value_type) * source.size());
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 
+    //    Function repace all cooresponding value to old_value by new_value
+	//    any container that equiped with operator[] and value_type with operator
+	//    = and == ;
+    // 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+	template<typename Container, typename T = Container::value_type >
+	void replace_all_by(Container& container, T old_value, T new_value) {
+
+		for (auto& c : container) {
+			if (c == old_value) c = new_value;
+		}
+
+	}
+
+
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// 
@@ -306,5 +334,3 @@ namespace Container {
 
 
 }
-
-namespace cu = Container;
