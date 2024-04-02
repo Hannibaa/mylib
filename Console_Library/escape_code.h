@@ -35,8 +35,6 @@
   * Copyright notice:                                                         *
   * Free use of the Library CFile                                             *
   * is permitted under the guidelines and in accordance with the most current *
-  * version of the MIT License.                                               *
-  * http://www.opensource.org/licenses/MIT                                    *
   *                                                                           *
   *****************************************************************************
  */
@@ -150,16 +148,16 @@ using uchar = unsigned char;
 #define  CURSOR_VISIBLE     	 "\x1b[?25h"    // make cursor visible
 
 	// Erase functions
-#define ERASEDIS               "\x1b[J"   // erase in display (same as ESC[0J)
-#define ERASEFCURDN            "\x1b[0J"  // erase from cursor until end of screen
-#define ERASEFCURBG            "\x1b[1J"  // erase from cursor to beginning of screen
-#define ERASESCREEN            "\x1b[2J"  // erase entire screen
-#define ERASESVLINE            "\x1b[3J"  // erase saved lines
+#define ERASEDIS               "\x1b[J"          // erase in display (same as ESC[0J)
+#define ERASEFCURDN            "\x1b[0J"         // erase from cursor until end of screen
+#define ERASEFCURBG            "\x1b[1J"         // erase from cursor to beginning of screen
+#define ERASESCREEN            "\x1b[2J"         // erase entire screen
+#define ERASESVLINE            "\x1b[3J"         // erase saved lines
 
-#define ERASEINLINE            "\x1b[K"   // erase in line (same as ESC[0K)
-#define ERASEFCURENDLINE       "\x1b[0K"  // erase from cursor to end of line
-#define ERASELINETOCUR         "\x1b[1K"  // erase start of line to the cursor
-#define ERASELINE              "\x1b[2K"  // erase the entire line
+#define ERASEINLINE            "\x1b[K"          // erase in line (same as ESC[0K)
+#define ERASEFCURENDLINE       "\x1b[0K"         // erase from cursor to end of line
+#define ERASELINETOCUR         "\x1b[1K"         // erase start of line to the cursor
+#define ERASELINE              "\x1b[2K"         // erase the entire line
 	/*
 		 Note: Erasing the line won't move the cursor, meaning that the cursor will
 		 stay at the last position it was at before the line was erased. You can use \r
